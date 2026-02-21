@@ -4,75 +4,50 @@
 # Importe la libreria para el hacer el juego y para que cierre bien.
 import pygame
 import sys 
+from scripts.game import Game
 
-# Inicie pygame para que mi juego corra 
-pygame.init()
+# Inicie pygame para que mi juego corra y cree la funcion principal para controlar el juego.
 
-# Para que el juego se vea en pantalla completa
-Pantalla = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-pygame.display.set_caption("La Ultima Salida")
+def main():
+    pygame.init()
 
-# Para controlar el tiempo 
-Reloj = pygame.time.Clock()
-Velocida = 60
+    # Para que el juego se vea en pantalla completa 
+    Pantalla = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    pygame.display.set_caption("La Ultima Salida")
 
-# Para controlar si el juego sigue abierto y realizar lo que es pantalla completa.
-jugando = True 
-En_pantalla_completa = True
+    # Para controlar el tiempo 
+    Reloj = pygame.time.Clock()
+    Velocidad = 60  
 
-# Voy a declarar mi variable para el menu y los botones.
-situacion = "Menu"
-boton_iniciar = pygame.Rect(400, 250, 200, 60)
-boton_reiniciar = pygame.Rect(400, 250, 200, 60)
-boton_volver = pygame.Rect(400, 330, 200, 60)
+    # Objeto Principal del juego
+    JuegoPrincipal = Game(Pantalla)
 
+    Jugando = True
+    En_pantalla_completa = True
 
-while jugando:
-    # Para el menu.
- if situacion == "Menu":
+    while Jugando:
+        for Evento in pygame.event.get():
 
-    
-    for acontecimiento in pygame.event.get():
+            if Evento.type == pygame.QUIT:
+                Jugando = False
 
-     if acontecimiento.type == pygame.QUIT:
-        jugando = False
-# Detectar el mouse 
-        if acontecimiento.type == pygame.MOUSEBUTTONDOWN:
+            if Evento.type == pygame.KEYDOWN:
+                if Evento.key == pygame.K_ESCAPE:
 
-         if situacion == "menu":
-          if boton_iniciar.collidepoint(acontecimiento.pos):
-            situacion = "jugando"
+                    if En_pantalla_completa:
+                       Pantalla = pygame.display.set_mode((1200, 700), pygame.RESIZABLE)
+                       En_pantalla_completa = False
+                    else:
+                        Pantalla = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                        En_pantalla_completa = True
 
-     elif situacion == "game_over":
-        if boton_reiniciar.collidepoint(acontecimiento.pos):
-            situacion = "jugando"
+        Pantalla.fill((0, 0, 0))
+        pygame.display.flip()
+        Reloj.tick(Velocidad)
 
-        if boton_volver.collidepoint(acontecimiento.pos):
-            situacion = "menu"
+    pygame.quit()
+    sys.exit()
 
-
-    if acontecimiento.type == pygame.KEYDOWN:
-        if acontecimiento.key == pygame.K_ESCAPE:
-
-            if En_pantalla_completa:
-                Pantalla = pygame.display.set_mode((1500, 700))
-                En_pantalla_completa = False
-            else:
-                
-                Pantalla = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-                En_pantalla_completa = True
-
-# Para pintar pintar mi fondo y actualizar la pantalla 
-Pantalla.fill((0, 0, 0))
-pygame.display.flip()   
-Reloj.tick(Velocida)  
-
-jugando = False  
-
-     
-
-#Para cerrar la ventana 
-pygame.quit()
-sys.exit()
-
-
+if __name__ == "__main__":
+    main()
+   
