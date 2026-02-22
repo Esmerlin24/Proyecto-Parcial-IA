@@ -3,6 +3,9 @@
 
 import pygame 
 
+# Para llamar la clase Mapa, desde el archivo map.py
+from scripts.map import Mapa  
+
 # Voy a crear mi clase llamada Game 
 
 class Game:
@@ -11,7 +14,7 @@ class Game:
     def __init__(self, Pantalla):
         self.Pantalla = Pantalla #guardo pantalla
         self.Estado = "MENU" # utilice esta variable para controlar en que parte del juego estoy.
-
+        self.Mapa = Mapa() # cree la el mapa para que sea un objeto real.
 
 # la funsion para los eventos del teclado y mouse
     def Handle_Events(self, Eventos):
@@ -30,3 +33,4 @@ class Game:
             self.Pantalla.fill((124, 252, 0)) # Color de la pantalla en menu
         elif self.Estado == "JUGANDO": # si estamos jugando
             self.Pantalla.fill((0, 0, 0)) # La pantalla es negra
+            self.Mapa.Dibujar(self.Pantalla) # Para dibujar mapa en pantalla S
