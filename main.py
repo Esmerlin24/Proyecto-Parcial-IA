@@ -23,25 +23,30 @@ def main():
     JuegoPrincipal = Game(Pantalla)
 
     Jugando = True
-    En_pantalla_completa = True
+    EnPantallaCompleta = True
 
     while Jugando:
-        for Evento in pygame.event.get():
+        Eventos = pygame.event.get()
 
+        for Evento in Eventos:
             if Evento.type == pygame.QUIT:
                 Jugando = False
 
             if Evento.type == pygame.KEYDOWN:
                 if Evento.key == pygame.K_ESCAPE:
 
-                    if En_pantalla_completa:
-                       Pantalla = pygame.display.set_mode((1200, 700), pygame.RESIZABLE)
-                       En_pantalla_completa = False
+                    if EnPantallaCompleta:
+                        Pantalla = pygame.display.set_mode((1200, 700), pygame.RESIZABLE)
+                        EnPantallaCompleta = False
                     else:
                         Pantalla = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-                        En_pantalla_completa = True
+                        EnPantallaCompleta = True
 
-        Pantalla.fill((0, 0, 0))
+        # Para conectar con game.py
+        JuegoPrincipal.Handle_Events(Eventos)
+        JuegoPrincipal.Update()
+        JuegoPrincipal.Draw()
+       
         pygame.display.flip()
         Reloj.tick(Velocidad)
 
