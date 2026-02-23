@@ -5,7 +5,7 @@ import pygame
 
 # Para llamar la clase Mapa, desde el archivo map.py
 from scripts.map import Mapa  
-
+from scripts.player import Player 
 # Voy a crear mi clase llamada Game 
 
 class Game:
@@ -15,7 +15,7 @@ class Game:
         self.Pantalla = Pantalla #guardo pantalla
         self.Estado = "MENU" # utilice esta variable para controlar en que parte del juego estoy.
         self.Mapa = Mapa() # cree la el mapa para que sea un objeto real.
-
+        self.Jugador = Player(self.Mapa)
 # la funsion para los eventos del teclado y mouse
     def Handle_Events(self, Eventos):
         for Evento in Eventos: # Para recorrer cada evento
@@ -26,7 +26,10 @@ class Game:
 # El metodo para actualizar la logica del juego
     def Update(self):
         if self.Estado == "JUGANDO": # Para actualizar las cosas solo si se esta jugando.
-            pass
+            Teclas = pygame.key.get_pressed()
+            DeltaTiempo = 0
+            self.Jugador.Mover(Teclas, DeltaTiempo)
+
 # Para dibujar todo en mi pantalla 
     def Draw(self):
         if self.Estado == "MENU": # Si estamos en menu
@@ -34,3 +37,4 @@ class Game:
         elif self.Estado == "JUGANDO": # si estamos jugando
             self.Pantalla.fill((0, 0, 0)) # La pantalla es negra
             self.Mapa.Dibujar(self.Pantalla) # Para dibujar mapa en pantalla S
+            self.Jugador.Dibujar(self.Pantalla)
