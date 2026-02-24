@@ -11,6 +11,8 @@ from scripts.player import Player
 # Importe la clase Timer desde timer.py dentro de scripts.
 # para crear el temporizador del juego y controlar la cuenta regresiva.
 from scripts.timer import Timer
+#Importe la clase enemigo desde enemy.py
+from scripts.enemy import Enemigo 
 
 # Voy a crear mi clase llamada Game 
 class Game:
@@ -22,7 +24,11 @@ class Game:
         self.Mapa = Mapa() # cree la el mapa para que sea un objeto real.
         self.Jugador = Player(self.Mapa)
         self.Temporizador = Timer(60)  # 60 segundos iniciales 
-
+        self.Enemigos = [ # Lista de enemigos, cada uno con su posicion inicial y direccion.
+    Enemigo(self.Mapa, 5, 5, 1),
+    Enemigo(self.Mapa, 8, 10, -1)
+] 
+        
 # la funsion para los eventos del teclado y mouse
     def Handle_Events(self, Eventos):
         for Evento in Eventos: # Para recorrer cada evento
@@ -34,12 +40,18 @@ class Game:
     def Update(self, DeltaTiempo):
 
         if self.Estado == "JUGANDO": # Para actualizar las cosas solo si se esta jugando.
-            self.Temporizador.Actualizar(DeltaTiempo)
 
-            if self.Temporizador.TiempoTerminado():
+            for EnemigoActual in self.Enemigos: #Para actualizar cada enemigo en la lista de enemigos.
+             EnemigoActual.Actualizar(DeltaTiempo)
+
+        if EnemigoActual.ColisionaConJugador(self.Jugador): # Si el enemigo choca con el jugador, se acaba el juego
+          self.Estado = "GAME_OVER"
+          self.Temporizador.Actualizar(DeltaTiempo)
+
+        if self.Temporizador.TiempoTerminado():
                 self.Estado = "GAME_OVER"        
-            Teclas = pygame.key.get_pressed()
-            self.Jugador.Mover(Teclas, DeltaTiempo)
+                Teclas = pygame.key.get_pressed()
+                self.Jugador.Mover(Teclas, DeltaTiempo)
 
 # Para dibujar todo en mi pantalla 
     def Draw(self):
@@ -50,7 +62,9 @@ class Game:
         elif self.Estado == "JUGANDO": # si estamos jugando
             self.Pantalla.fill((0, 0, 0)) # La pantalla es negra
             self.Mapa.Dibujar(self.Pantalla) # Para dibujar mapa en pantalla S
-            self.Jugador.Dibujar(self.Pantalla) # Para dibujar el jugador en pantalla 
+            self.Jugador.Dibujar(self.Pantalla) # Para dibujar el jugador en pantalla
+            for EnemigoActual in self.Enemigos: # Para dibujar cada enemigo en Pantalla
+             EnemigoActual.Dibujar(self.Pantalla) # 
             self.Temporizador.Dibujar(self.Pantalla) # Para dibujar el tiempo en pantalla
 
         elif self.Estado == "GAME_OVER":
