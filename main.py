@@ -44,11 +44,12 @@ def main():
 
         # Para conectar con game.py
         JuegoPrincipal.Handle_Events(Eventos)
-        JuegoPrincipal.Update()
+        DeltaTiempo = Reloj.tick(Velocidad) / 1000
+        JuegoPrincipal.Update(DeltaTiempo)
         JuegoPrincipal.Draw()
        
         pygame.display.flip()
-        Reloj.tick(Velocidad)
+        
 
     pygame.quit()
     sys.exit()
