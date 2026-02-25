@@ -39,8 +39,8 @@ class Player:
            0 <= NuevaColumna < len(self.Mapa.Cuadricula[0]) and \
           self.Mapa.Cuadricula[NuevaFila][NuevaColumna] != 1:
 
-         self.Fila = NuevaFila
-         self.Columna = NuevaColumna
+          self.Fila = NuevaFila
+          self.Columna = NuevaColumna
          
       # Función para dibujar el jugador 
     def Dibujar(self, Pantalla): 
