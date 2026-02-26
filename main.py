@@ -1,7 +1,7 @@
 # Nombre: Esmerlin Severino Paredes
 # Matrícula: 24-EISN-2-033
 
-# Importe la libreria para el hacer el juego y para que cierre bien.
+# Importe la libreria para hacer el juego y para que cierre bien.
 import pygame
 import sys 
 from scripts.game import Game
@@ -13,9 +13,10 @@ def main():
     
 
     # Obtener resolución real de la pantalla
-    infoPantalla = pygame.display.Info()
-    anchoPantalla = infoPantalla.current_w
-    altoPantalla = infoPantalla.current_h
+
+    infoPantalla = pygame.display.Info() # Para obtener la informacion de la pantalla actual    anchoPantalla = infoPantalla.current_w
+    altoPantalla = infoPantalla.current_h # Para obtener la altura de la pantalla actual 
+    anchoPantalla = infoPantalla.current_w # Para obtener el ancho de la pantalla actual
 
     # Para que el juego se vea en pantalla completa 
     Pantalla = pygame.display.set_mode((anchoPantalla, altoPantalla), pygame.FULLSCREEN)
@@ -53,16 +54,23 @@ def main():
 
         # Para conectar con game.py
         JuegoPrincipal.Handle_Events(Eventos)
-        DeltaTiempo = Reloj.tick(Velocidad) / 1000
-        JuegoPrincipal.Update(DeltaTiempo)
-        JuegoPrincipal.Draw()
+        
+        # Limitamos los FPS a 60 y calculamos el DeltaTiempo de forma precisa
+        DeltaTiempo = Reloj.tick(Velocidad) / 1000.0
+        
+        # Si por alguna razón DeltaTiempo es muy grande (ej. al inicio), lo limitamos
+        # para que el jugador no "salte" o se mueva demasiado rápido de golpe.
+        if DeltaTiempo > 0.1:
+            DeltaTiempo = 1/60
+
+        JuegoPrincipal.Update(DeltaTiempo) # Para actualizar la logica del juego
+        JuegoPrincipal.Draw() # Para dibujar el juego en la pantalla 
        
-        pygame.display.flip()
+        pygame.display.flip() # Para actualizar la pantalla con lo que se ha dibujado 
         
 
-    pygame.quit()
-    sys.exit()
+    pygame.quit() # para cerrar pygame correctamente 
+    sys.exit() # para cerrar el programa correctamente 
 
-if __name__ == "__main__":
+if __name__ == "__main__": # Para ejecutar la funsion main solo si este archivo es el que se esta ejecutando directamente. 
       main()
-   
