@@ -25,8 +25,8 @@ class Game:
         self.Jugador = Player(self.Mapa)
         self.Temporizador = Timer(60)  # 60 segundos iniciales 
         self.Enemigos = [ # Lista de enemigos, cada uno con su posicion inicial y direccion.
-            Enemigo(self.Mapa, 5, 5, 1),
-            Enemigo(self.Mapa, 1, 8, -1)  # Corregí posición para que esté dentro del mapa
+            Enemigo(self.Mapa, 11, 2, 1), # Posición ajustada al nuevo mapa amplio
+            Enemigo(self.Mapa, 5, 15, -1)  # Posición ajustada al nuevo mapa amplio
         ] 
         
     # la funsion para los eventos del teclado y mouse
@@ -34,13 +34,13 @@ class Game:
         for Evento in Eventos: # Para recorrer cada evento
             if Evento.type == pygame.KEYDOWN: # para detectar si se presiono una tecla.
                 if Evento.key == pygame.K_RETURN: # si fue la tecla enter.
-                    if self.Estado == "MENU":
+                    if self.Estado == "MENU" or self.Estado == "GAME_OVER":
                         self.Estado = "JUGANDO"
                         self.Temporizador = Timer(60)  # 60 segundos iniciales 
                         self.Jugador = Player(self.Mapa)
                         self.Enemigos = [ # Lista de enemigos, cada uno con su posicion inicial y direccion.
-                          #  Enemigo(self.Mapa, 5, 5, 1),
-                          #  Enemigo(self.Mapa, 1, 8, -1) 
+                            Enemigo(self.Mapa, 11, 2, 1),
+                            Enemigo(self.Mapa, 5, 15, -1) 
                         ]
 
     # El metodo para actualizar la logica del juego
@@ -57,7 +57,7 @@ class Game:
             self.Jugador.Mover(Teclas, DeltaTiempo)
 
             for EnemigoActual in self.Enemigos: #Para actualizar cada enemigo en la lista de enemigos.
-                EnemigoActual.Actualizar(DeltaTiempo)
+                EnemigoActual.Actualizar(DeltaTiempo, self.Jugador) # AÑADE self.Jugador
 
                 if EnemigoActual.ColisionaConJugador(self.Jugador): # Si el enemigo choca con el jugador, se acaba el juego
                     self.Estado = "GAME_OVER"        
@@ -82,4 +82,7 @@ class Game:
 
             Fuente = pygame.font.SysFont("Arial", 60) # Para crear la fuente de texto de Game Over 
             Texto = Fuente.render("GAME OVER", True, (255, 255, 255))  
-            self.Pantalla.blit(Texto, (400, 300))  
+            # Centramos el texto dinámicamente según el tamaño de la pantalla
+            AnchoTexto = Texto.get_width()
+            AltoTexto = Texto.get_height()
+            self.Pantalla.blit(Texto, (self.Pantalla.get_width() // 2 - AnchoTexto // 2, self.Pantalla.get_height() // 2 - AltoTexto // 2))
