@@ -12,7 +12,7 @@ class Mapa:
         # 0 = Suelo
         # 2 = Salida
 
-    # La estructura del mapa (Diseño ampliado 20x15 para mayor detalle)
+    # La estructura del mapa 20*15
 
         self.Cuadricula = [  
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -40,11 +40,11 @@ class Mapa:
 
        # Para dividir la pantalla tanto vertical como horizontal.
     
-        Filas = len(self.Cuadricula)
-        Columnas = len(self.Cuadricula[0])
+        Filas = len(self.Cuadricula) # Para devolver cuantas filas tiene el mapa
+        Columnas = len(self.Cuadricula[0]) # Para devolver cuantas columnas tiene el mapa 
 
-        TamañoCeldaX = AnchoPantalla // Columnas
-        TamañoCeldaY = AltoPantalla // Filas
+        TamañoCeldaX = AnchoPantalla // Columnas # Para dividir el ancho de la pantalla entre el numero de columna 
+        TamañoCeldaY = AltoPantalla // Filas # Para dividir el alto de la pantalla entre el numero de fila 
 
         # Para recorrer la fila del mapa
         for Fila in range(Filas):  
@@ -52,10 +52,10 @@ class Mapa:
 
                 Valor = self.Cuadricula[Fila][Columna] #Para obtener el numero del mapa.
 
-                PosicionX = Columna * TamañoCeldaX  
-                PosicionY = Fila * TamañoCeldaY  
+                PosicionX = Columna * TamañoCeldaX  # Para calcular la posicion horizontal del bloque a dibujar 
+                PosicionY = Fila * TamañoCeldaY  # Para calcular la posicion vertical del bloque a dibujar 
 
-                Rectangulo = pygame.Rect(PosicionX, PosicionY, TamañoCeldaX, TamañoCeldaY)
+                Rectangulo = pygame.Rect(PosicionX, PosicionY, TamañoCeldaX, TamañoCeldaY) # Para crear un rectangulo con la posicion y el tamaño de cada bloque a dibujar 
                 
                 # Para dibujar bloque 
                 if Valor == 1:
