@@ -77,7 +77,7 @@ class Game:
                 EnemigoActual.Dibujar(self.Pantalla) # 
             self.Temporizador.Dibujar(self.Pantalla) # Para dibujar el tiempo en pantalla
 
-        elif self.Estado == "GAME_OVER":
+        elif self.Estado == "GAME_OVER": # si el juego se acaba lo muestra en pantalla.
             self.Pantalla.fill((125, 0, 0)) # Color de la pantalla en Game Over 
 
             Fuente = pygame.font.SysFont("Arial", 60) # Para crear la fuente de texto de Game Over 
