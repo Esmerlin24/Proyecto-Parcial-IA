@@ -32,10 +32,35 @@ class Mapa:
             [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], # Salida (2) en zona abierta para evitar bloqueos
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
         ]
+        
+        # Cargo la imagen del suelo con la extensión 
+        try:
+            self.ImagenSuelo = pygame.image.load("assets/images/suelo.jpg").convert()
+            self.ImagenPared = pygame.image.load("assets/images/pared.jpg").convert()
+            self.ImagenSalida = pygame.image.load("assets/images/salida.jpg").convert()
+            self.ImagenPinchos = pygame.image.load("assets/images/pinchos.jpg").convert()
+            self.ImagenLodo = pygame.image.load("assets/images/lodo.jpg").convert()
+        except:
+            print("Error: No se pudieron cargar las imágenes. Asegúrate de que los archivos .jpg existen en assets/images/")
+            self.ImagenSuelo = None
+            self.ImagenPared = None
+            self.ImagenSalida = None
+            self.ImagenPinchos = None
+            self.ImagenLodo = None
+
+        # Variables para la animación de los pinchos
+        self.UltimoCambio = pygame.time.get_ticks()
+        self.MostrarPinchos = True
     
     # Para dibujar el mapa en la pantalla
     def Dibujar(self, Pantalla): 
         
+        # Lógica para alternar la animación 
+        TiempoActual = pygame.time.get_ticks()
+        if TiempoActual - self.UltimoCambio > 4000:
+            self.MostrarPinchos = not self.MostrarPinchos
+            self.UltimoCambio = TiempoActual
+
         AnchoPantalla = Pantalla.get_width() # Para devolver cuántos píxeles mide de ancho.
         AltoPantalla = Pantalla.get_height() # Para devolver cuántos píxeles mide de alto.
 
@@ -60,16 +85,41 @@ class Mapa:
                 
                 # Para dibujar bloque 
                 if Valor == 1:
-                    pygame.draw.rect(Pantalla, (100,100,100), Rectangulo) # Para dibujar las paredes de color gris.
+                    if self.ImagenPared:
+                        ImgParedEsc = pygame.transform.scale(self.ImagenPared, (TamañoCeldaX, TamañoCeldaY))
+                        Pantalla.blit(ImgParedEsc, (PosicionX, PosicionY))
+                    else:
+                        pygame.draw.rect(Pantalla, (100,100,100), Rectangulo) # Para dibujar las paredes de color gris.
 
                 elif Valor == 2:
-                    pygame.draw.rect(Pantalla, (255,255,0), Rectangulo) # Para dibujar la salida de color amarillo.
+                    if self.ImagenSalida:
+                        ImgSalidaEsc = pygame.transform.scale(self.ImagenSalida, (TamañoCeldaX, TamañoCeldaY))
+                        Pantalla.blit(ImgSalidaEsc, (PosicionX, PosicionY))
+                    else:
+                        pygame.draw.rect(Pantalla, (255,255,0), Rectangulo) # Para dibujar la salida de color amarillo.
 
                 elif Valor == 3:
-                    pygame.draw.rect(Pantalla, (200,0,0), Rectangulo) # Para dibujar las trampas de pinchos de color rojo.
+                    # Animación: alterna entre la imagen de pinchos y la imagen de suelo
+                    if self.MostrarPinchos and self.ImagenPinchos:
+                        ImgPinchosEsc = pygame.transform.scale(self.ImagenPinchos, (TamañoCeldaX, TamañoCeldaY))
+                        Pantalla.blit(ImgPinchosEsc, (PosicionX, PosicionY))
+                    elif self.ImagenSuelo:
+                        ImgSueloEsc = pygame.transform.scale(self.ImagenSuelo, (TamañoCeldaX, TamañoCeldaY))
+                        Pantalla.blit(ImgSueloEsc, (PosicionX, PosicionY))
+                    else:
+                        pygame.draw.rect(Pantalla, (200,0,0) if self.MostrarPinchos else (30,30,30), Rectangulo)
 
                 elif Valor == 4:
-                    pygame.draw.rect(Pantalla, (139,69,19), Rectangulo) # Para dibujar el lodo de color marrón.
+                    if self.ImagenLodo:
+                        ImgLodoEsc = pygame.transform.scale(self.ImagenLodo, (TamañoCeldaX, TamañoCeldaY))
+                        Pantalla.blit(ImgLodoEsc, (PosicionX, PosicionY))
+                    else:
+                        pygame.draw.rect(Pantalla, (139,69,19), Rectangulo) # Para dibujar el lodo de color marrón.
 
                 else:
-                    pygame.draw.rect(Pantalla, (30,30,30), Rectangulo) # Para dibujar el suelo de color oscuro.
+                    # Aquí se dibuja la imagen solo en el valor 0 (suelo)
+                    if self.ImagenSuelo:
+                        SueloEscalado = pygame.transform.scale(self.ImagenSuelo, (TamañoCeldaX, TamañoCeldaY))
+                        Pantalla.blit(SueloEscalado, (PosicionX, PosicionY))
+                    else:
+                        pygame.draw.rect(Pantalla, (30,30,30), Rectangulo) # Para dibujar el suelo de color oscuro.
