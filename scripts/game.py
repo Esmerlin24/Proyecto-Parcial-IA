@@ -24,9 +24,10 @@ class Game:
         self.Temporizador = Timer(60)  # 60 segundos iniciales 
         self.Vidas = 3  # para controlar las las vidas del jugador 
 
-        self.Enemigos = [ # Lista de enemigos con sus posiciones iniciales
-            Enemigo(self.Mapa, 11, 2, 1), # Enemigo que empieza en la fila 11, columna 2 y se mueva hacia la derecha
-            Enemigo(self.Mapa, 5, 15, -1) # Enemigo que empieza en la fila 5, columna 15 y se mueve hacia la izquierda 
+        self.Enemigos = [ # Lista de enemigos con sus posiciones iniciales ajustadas al nuevo mapa
+            Enemigo(self.Mapa, 13, 10), # Enemigo 1 bloqueando el pasillo de la salida
+            Enemigo(self.Mapa, 9, 5),   # Enemigo 2 vigilando la entrada al lodo
+            Enemigo(self.Mapa, 7, 15)   # Enemigo 3 patrullando el pasillo central derecho
         ] 
         
     # la funsion para los eventos del teclado y mouse
@@ -40,9 +41,14 @@ class Game:
                         self.Vidas = 3  # reinicia las vidas 
                         self.Temporizador = Timer(60) # reinicia el temporizador 
                         self.Jugador = Player(self.Mapa) # reinicia el jugador a su posicion inicial 
-                        self.Enemigos = [  # Reinicia los enemigos a sus posisiones iniciales
-                            Enemigo(self.Mapa, 11, 2, 1),
-                            Enemigo(self.Mapa, 5, 15, -1) 
+                        
+                        # Limpiar alerta global para que no te persigan al reaparecer
+                        Enemigo.Alerta_Global_Pos = None
+                        
+                        self.Enemigos = [  # Reinicia los enemigos a sus posisiones estrategicas
+                            Enemigo(self.Mapa, 13, 10), # Guardia de la salida
+                            Enemigo(self.Mapa, 9, 5),   # Centinela del lodo
+                            Enemigo(self.Mapa, 7, 15)   # Interceptor central
                         ]
 
     # El metodo para actualizar la logica del juego
@@ -54,6 +60,24 @@ class Game:
 
             if self.Temporizador.TiempoTerminado(): # Para detectar si el tiempo se ha terminado
                 self.Estado = "GAME_OVER"  
+
+            # LOGICA DE VELOCIDAD SEGUN EL TERRENO (LODO)
+            CeldaActual = self.Mapa.Cuadricula[int(self.Jugador.Fila)][int(self.Jugador.Columna)] # Para saber que pisa el jugador
+            if CeldaActual == 4: # Si el jugador esta pisando lodo (4)
+                self.Jugador.Velocidad = 2.0 # Baja la velocidad del jugador 
+            else:
+                self.Jugador.Velocidad = 5.0 # Velocidad normal fuera del lodo
+
+            # LOGICA DE DAÑO POR TRAMPAS
+            if CeldaActual == 3: # Si el jugador pisa los pinchos rojos (3)
+                self.Vidas -= 1 # Resta una vida por el daño
+                if self.Vidas <= 0: # Para revisar si murio
+                    self.Estado = "GAME_OVER" # Cambia a pantalla de derrota
+                else:
+                    # Limpiar alerta al morir por trampa
+                    Enemigo.Alerta_Global_Pos = None # Para que los enemigos no te sigan al reaparecer 
+                    self.Jugador.Fila = 1.0 # Lo devuelve al inicio por seguridad
+                    self.Jugador.Columna = 1.0 
 
             Teclas = pygame.key.get_pressed() # Para obtener las teclas que se estan presionandoen ese momento.
             self.Jugador.Mover(Teclas, DeltaTiempo)
@@ -72,6 +96,7 @@ class Game:
                         self.Estado = "GAME_OVER"
                     else:
                         # Reaparecer al inicio si pierde una vida
+                        Enemigo.Alerta_Global_Pos = None # Resetear alerta de colmena al morir
                         self.Jugador.Fila = 1.0
                         self.Jugador.Columna = 1.0        
 
