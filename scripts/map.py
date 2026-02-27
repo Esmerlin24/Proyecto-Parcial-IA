@@ -11,24 +11,25 @@ class Mapa:
         # 1 = Pared
         # 0 = Suelo
         # 2 = Salida
+        # 3 = Trampa de Pinchos (Peligro)
+        # 4 = Zona de Lodo (Lentitud)
 
-    # La estructura del mapa 20*15
-
+    # La estructura del mapa 20*15 diseñada para que sea fluida y funcional
         self.Cuadricula = [  
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-            [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,2,1],
-            [1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,0,1,1,0,1],
-            [1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,0,1],
-            [1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,0,1],
-            [1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1,0,1],
-            [1,1,1,1,1,0,1,1,1,0,1,0,1,1,1,1,0,1,0,1],
-            [1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1],
-            [1,0,1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1],
-            [1,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1],
-            [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1],
-            [1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
-            [1,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,1,0,1,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], # Pasillo superior despejado para inicio
+            [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
+            [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+            [1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1],
+            [1,0,0,0,0,0,3,3,3,0,0,0,0,0,0,0,0,0,0,1], # Espacio amplio alrededor de pinchos
+            [1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], # Pasillo central de gran flujo para la IA
+            [1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,1], # Zona de lodo con escape lateral
+            [1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], # Espacio de maniobra para evitar enemigos
+            [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], # Salida (2) en zona abierta para evitar bloqueos
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
         ]
     
@@ -48,7 +49,7 @@ class Mapa:
 
         # Para recorrer la fila del mapa
         for Fila in range(Filas):  
-            for Columna in range(Columnas):
+            for Columna in range(Columnas): # Para recorrer la columna del mapa.
 
                 Valor = self.Cuadricula[Fila][Columna] #Para obtener el numero del mapa.
 
@@ -59,10 +60,16 @@ class Mapa:
                 
                 # Para dibujar bloque 
                 if Valor == 1:
-                    pygame.draw.rect(Pantalla, (100,100,100), Rectangulo) 
+                    pygame.draw.rect(Pantalla, (100,100,100), Rectangulo) # Para dibujar las paredes de color gris.
 
                 elif Valor == 2:
-                    pygame.draw.rect(Pantalla, (255,255,0), Rectangulo)
+                    pygame.draw.rect(Pantalla, (255,255,0), Rectangulo) # Para dibujar la salida de color amarillo.
+
+                elif Valor == 3:
+                    pygame.draw.rect(Pantalla, (200,0,0), Rectangulo) # Para dibujar las trampas de pinchos de color rojo.
+
+                elif Valor == 4:
+                    pygame.draw.rect(Pantalla, (139,69,19), Rectangulo) # Para dibujar el lodo de color marrón.
 
                 else:
-                    pygame.draw.rect(Pantalla, (30,30,30), Rectangulo)
+                    pygame.draw.rect(Pantalla, (30,30,30), Rectangulo) # Para dibujar el suelo de color oscuro.
