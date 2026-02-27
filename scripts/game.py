@@ -2,6 +2,7 @@
 # Matrícula: 24-EISN-2-033
 
 import pygame 
+import random # Importe random para las posiciones aleatorias de los enemigos
 
 # Para llamar la clase Mapa, desde el archivo map.py
 from scripts.map import Mapa  
@@ -24,12 +25,24 @@ class Game:
         self.Temporizador = Timer(60)  # 60 segundos iniciales 
         self.Vidas = 3  # para controlar las las vidas del jugador 
 
+        # Lista de posiciones estratégicas (Fila, Columna) donde pueden aparecer los enemigos
+        self.Posiciones_Estrategicas = [
+            (13, 10), (9, 5), (7, 15), (5, 5), (12, 18), (3, 10), (10, 2)
+        ]
+
         self.Enemigos = [ # Lista de enemigos con sus posiciones iniciales ajustadas al nuevo mapa
             Enemigo(self.Mapa, 13, 10), # Enemigo 1 bloqueando el pasillo de la salida
             Enemigo(self.Mapa, 9, 5),   # Enemigo 2 vigilando la entrada al lodo
             Enemigo(self.Mapa, 7, 15)   # Enemigo 3 patrullando el pasillo central derecho
         ] 
         
+    # Función para reposicionar enemigos de forma aleatoria
+    def Reposicionar_Enemigos_Aleatorio(self):
+        for e in self.Enemigos:
+            nueva_pos = random.choice(self.Posiciones_Estrategicas)
+            e.Fila = float(nueva_pos[0])
+            e.Columna = float(nueva_pos[1])
+
     # la funsion para los eventos del teclado y mouse
     def Handle_Events(self, Eventos):
         for Evento in Eventos: # Para recorrer cada evento
@@ -50,6 +63,8 @@ class Game:
                             Enemigo(self.Mapa, 9, 5),   # Centinela del lodo
                             Enemigo(self.Mapa, 7, 15)   # Interceptor central
                         ]
+                        # Al empezar de cero, también los barajamos
+                        self.Reposicionar_Enemigos_Aleatorio()
 
     # El metodo para actualizar la logica del juego
     def Update(self, DeltaTiempo):
@@ -66,7 +81,7 @@ class Game:
             if CeldaActual == 4: # Si el jugador esta pisando lodo (4)
                 self.Jugador.Velocidad = 2.0 # Baja la velocidad del jugador 
             else:
-                self.Jugador.Velocidad = 5.0 # Velocidad normal fuera del lodo
+                self.Jugador.Velocidad = 4.0 # Velocidad normal fuera del lodo
 
             # LOGICA DE DAÑO POR TRAMPAS
             if CeldaActual == 3: # Si el jugador pisa los pinchos rojos (3)
@@ -78,6 +93,8 @@ class Game:
                     Enemigo.Alerta_Global_Pos = None # Para que los enemigos no te sigan al reaparecer 
                     self.Jugador.Fila = 1.0 # Lo devuelve al inicio por seguridad
                     self.Jugador.Columna = 1.0 
+                    # Reposicionar enemigos al morir por trampa
+                    self.Reposicionar_Enemigos_Aleatorio()
 
             Teclas = pygame.key.get_pressed() # Para obtener las teclas que se estan presionandoen ese momento.
             self.Jugador.Mover(Teclas, DeltaTiempo)
@@ -98,7 +115,9 @@ class Game:
                         # Reaparecer al inicio si pierde una vida
                         Enemigo.Alerta_Global_Pos = None # Resetear alerta de colmena al morir
                         self.Jugador.Fila = 1.0
-                        self.Jugador.Columna = 1.0        
+                        self.Jugador.Columna = 1.0
+                        #  Reposicionar enemigos al ser atrapado
+                        self.Reposicionar_Enemigos_Aleatorio()
 
     # Para dibujar todo en mi pantalla 
     def Draw(self):
