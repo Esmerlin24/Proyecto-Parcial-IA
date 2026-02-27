@@ -4,7 +4,8 @@
 # Importe la libreria para hacer el juego y para que cierre bien.
 import pygame
 import sys 
-from scripts.game import Game
+import random # Importe random para seleccionar posisiones aleatorias para los enemigos
+from scripts.game import Game # Para llamar la clase game dede game.py
 
 # Inicie pygame para que mi juego corra y cree la funcion principal para controlar el juego.
 
@@ -14,7 +15,8 @@ def main():
 
     # Obtener resolución real de la pantalla
 
-    infoPantalla = pygame.display.Info() # Para obtener la informacion de la pantalla actual    anchoPantalla = infoPantalla.current_w
+    infoPantalla = pygame.display.Info() # Para obtener la informacion de la pantalla actual    
+    anchoPantalla = infoPantalla.current_w # Para obtener el ancho de la pantalla actual 
     altoPantalla = infoPantalla.current_h # Para obtener la altura de la pantalla actual 
     anchoPantalla = infoPantalla.current_w # Para obtener el ancho de la pantalla actual
 
@@ -29,8 +31,12 @@ def main():
     # Objeto Principal del juego
     JuegoPrincipal = Game(Pantalla)
 
-    Jugando = True
-    EnPantallaCompleta = True
+    # Definir posiciones estratégicas para que los enemigos aparezcan en lugares distintos
+
+    posiciones_estrategicas = [(200, 200), (800, 200), (200, 600), (900, 500), (500, 300)]
+
+    Jugando = True # Variable para controlar el bucle principal del juego 
+    EnPantallaCompleta = True # variable para controlar el estado de pantalla completa 
 
     while Jugando: # Bucle principal del juego, este se ejecuta mientras jugando sea verdadero
         Eventos = pygame.event.get() # para obtener los eventos del teclado y mouse 
@@ -52,8 +58,8 @@ def main():
                     # Para actualizar siempre la pantalla dentro del juego
                     JuegoPrincipal.Pantalla = Pantalla
 
-        # Para conectar con game.py
-        JuegoPrincipal.Handle_Events(Eventos)
+        
+        JuegoPrincipal.Handle_Events(Eventos) # Para manejar los eventos del juego 
         
         # Limitamos los FPS a 60 y calculamos el DeltaTiempo de forma precisa
         DeltaTiempo = Reloj.tick(Velocidad) / 1000.0
@@ -62,6 +68,20 @@ def main():
         # para que el jugador no "salte" o se mueva demasiado rápido de golpe.
         if DeltaTiempo > 0.1:
             DeltaTiempo = 1/60
+
+        # Lógica de reinicio 
+        # Verificamos si el jugador perdió una vida o el tiempo se acabó 
+        if hasattr(JuegoPrincipal, 'perdio') and JuegoPrincipal.perdio:
+            # Reubicar al jugador a su posición inicial
+            JuegoPrincipal.jugador.rect.topleft = (50, 50) 
+            
+            # Reubicar a cada enemigo en una posición estratégica aleatoria
+            for enemigo in JuegoPrincipal.enemigos:
+                enemigo.rect.topleft = random.choice(posiciones_estrategicas)
+            
+            # Resetear la variable de pérdida para que el juego continúe
+            JuegoPrincipal.perdio = False
+            
 
         JuegoPrincipal.Update(DeltaTiempo) # Para actualizar la logica del juego
         JuegoPrincipal.Draw() # Para dibujar el juego en la pantalla 
