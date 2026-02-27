@@ -2,9 +2,15 @@
 # Matrícula: 24-EISN-2-033
 
 import pygame  
-from .behavior_tree import Selector, Secuencia, Accion # Importamos el algoritmo del maestro
+import math # Importe math para calcular distancias y vision real
+from .behavior_tree import Selector, Secuencia, Accion # Importe el algoritmo del arbol de comportamiento
+from .astar import Astar # Importe el algoritmo de búsqueda de caminos A* 
 
 class Enemigo:  
+   
+    # Si un enemigo ve al jugador, guarda aquí la posición para que los otros lo sepan
+    Alerta_Global_Pos = None 
+
     def __init__(self, Mapa, Fila, Columna, DireccionInicial=1):
         # Mapa, es para hacer referencia al mapa 
         # Fila, para la posición vertical inicial 
@@ -12,98 +18,156 @@ class Enemigo:
         # DireccionInicial, 1 derecha, -1 izquierda 
 
         self.Mapa = Mapa  # Para guardar el mapa dentro del enemigo y poder revisar colisiones
-        self.Fila = Fila  # para guardar la posicion vertical del enemigo 
-        self.Columna = Columna  # para guardar la posicion horizontal del enemigo
-        self.Direccion = DireccionInicial  # Para gardar la direccion del enemigo 
-        self.Velocidad = 3  # Para guardar la velocidad del enemigo 
+        self.Fila = float(Fila)  # para guardar la posicion vertical del enemigo
+        self.Columna = float(Columna)  # para guardar la posicion horizontal del enemigo
+        
+       
+        self.OrigenFila = float(Fila) # para guardar la posicion de origen vertical del enemigo
+        self.OrigenColumna = float(Columna)
+        
+        self.Direccion = DireccionInicial  # Para guardar la direccion del enemigo 
+        self.Velocidad = 2.0  # velocidad base de los enemigos
+         
 
         # Variables temporales para el Árbol
         self.DeltaTiempo_actual = 0 # Para guardar el delta tiempo actual y usarlo en las acciones 
         self.jugador_actual = None # Para guardar la referencia al jugador y usarlo en las acciones 
         self.estado_terminal = "" # Para no saturar la consola de prints
+        self.Alerta = False #  variable para saber si el enemigo está en modo búsqueda
 
-        
         # CONSTRUCCIÓN DEL ÁRBOL DE COMPORTAMIENTO
-       
-        self.comportamiento = Selector() # El selector va a elegir entre perseguir o patrullar dependiendo si ve o no el jugador 
+        self.comportamiento = Selector() 
         
-        secuencia_persecucion = Secuencia() # Para la persecusion el enemigo tiene que ver al jugador y luego perseguirlo
-        accion_patrullar = Accion(self.patrullar) # Si no ve el jugador entonces patrulla 
-
-        # 1. Prioridad alta: Intentar perseguir
-        self.comportamiento.agregar_hijo(secuencia_persecucion) 
-        # 2. Prioridad baja: Si falla la persecución, patrullar
-        self.comportamiento.agregar_hijo(accion_patrullar)
-
-        # Dentro de la persecución: Condición -> Acción
-        secuencia_persecucion.agregar_hijo(Accion(self.ve_al_jugador))
+        # Rama 1: Persecución Directa (Si yo lo veo)
+        secuencia_persecucion = Secuencia()  
+        secuencia_persecucion.agregar_hijo(Accion(self.ve_al_jugador)) 
         secuencia_persecucion.agregar_hijo(Accion(self.perseguir))
-     
+        
+        # Rama 2: Refuerzo (Si otro lo vio, voy a ese punto)
+        secuencia_refuerzo = Secuencia()
+        secuencia_refuerzo.agregar_hijo(Accion(self.hay_alerta_global))
+        secuencia_refuerzo.agregar_hijo(Accion(self.ir_al_refuerzo))
 
-    def Actualizar(self, DeltaTiempo, Jugador): 
-        # Guardamos estas variables para que las Acciones puedan usarlas
+        # 1. Intentar perseguir si yo lo veo
+        self.comportamiento.agregar_hijo(secuencia_persecucion) 
+        # 2. Si no lo veo yo, ver si alguien más dio la voz de alerta
+        self.comportamiento.agregar_hijo(secuencia_refuerzo)
+        # 3. Si todo falla, volver a su puesto y patrullar
+        self.comportamiento.agregar_hijo(Accion(self.patrullar))
+
+    def Actualizar(self, DeltaTiempo, Jugador): # Para actualizar el comportamiento del enemigo 
         self.DeltaTiempo_actual = DeltaTiempo
         self.jugador_actual = Jugador
-        
-        # Ejecutamos la Inteligencia Artificial
         self.comportamiento.ejecutar()
 
-    #  CONDICIONES Y ACCIONES DEL ÁRBOL 
-
     def ve_al_jugador(self):
-        # Calculamos la distancia vision de 5 celdas para el nuevo mapa 
-        distancia = abs(self.Fila - self.jugador_actual.Fila) + abs(self.Columna - self.jugador_actual.Columna)
-        if distancia <= 5:
+        distancia = math.sqrt((self.Fila - self.jugador_actual.Fila)**2 + (self.Columna - self.jugador_actual.Columna)**2)
+        
+        if distancia <= 8: # Rango de visión equilibrado
+            pasos = int(distancia * 3) 
+            for i in range(1, pasos):
+                t = i / pasos
+                check_f = self.Fila + (self.jugador_actual.Fila - self.Fila) * t
+                check_c = self.Columna + (self.jugador_actual.Columna - self.Columna) * t
+                if self.Mapa.Cuadricula[int(check_f)][int(check_c)] == 1:
+                    self.Alerta = False
+                    return False 
+            
+            # SI LO VEO: Activo mi alerta y aviso a los demás (Colmena)
+            self.Alerta = True 
+            Enemigo.Alerta_Global_Pos = (self.jugador_actual.Fila, self.jugador_actual.Columna)
+            
             if self.estado_terminal != "PERSIGUIENDO":
-                print("🎯 ¡Enemigo: Ve al jugador! -> Iniciando persecución.")
+                print("🎯 ¡Enemigo: Objetivo localizado! Avisando a la colmena.")
                 self.estado_terminal = "PERSIGUIENDO"
-            return True # Retorna True para que la Secuencia pase a 'perseguir'
-        return False # Retorna False, rompe la secuencia, el Selector pasa a 'patrullar'
+            return True 
+            
+        self.Alerta = False 
+        return False 
+
+    def hay_alerta_global(self):
+        # Comprobar si algún compañero vio al jugador
+        if Enemigo.Alerta_Global_Pos is not None:
+            dist_alerta = math.sqrt((self.Fila - Enemigo.Alerta_Global_Pos[0])**2 + (self.Columna - Enemigo.Alerta_Global_Pos[1])**2)
+            # Si llega al punto y no hay nadie, se apaga la alerta
+            if dist_alerta < 0.5:
+                Enemigo.Alerta_Global_Pos = None
+                return False
+            return True
+        return False
+
+    def ir_al_refuerzo(self):
+        # Velocidad de refuerzo moderada (2.4) para que el jugador pueda reaccionar
+        return self.mover_con_astar(Enemigo.Alerta_Global_Pos[0], Enemigo.Alerta_Global_Pos[1], 2.4)
 
     def perseguir(self):
-        # Moverse en dirección al jugador de forma rápida
-        self.Velocidad = 3.5 # Aumenta velocidad al detectar
-        return self.mover_logica(self.jugador_actual.Fila, self.jugador_actual.Columna)
+        # Persecución activa directa (2.8), lo suficientemente lento para poder huir
+        return self.mover_con_astar(self.jugador_actual.Fila, self.jugador_actual.Columna, 2.8)
+
+    def mover_con_astar(self, t_fila, t_columna, vel_base):
+        # Función genérica para mover al enemigo usando A*
+        if self.Mapa.Cuadricula[int(self.Fila)][int(self.Columna)] == 4:
+            self.Velocidad = vel_base * 0.4 
+        else:
+            self.Velocidad = vel_base
+
+        Inicio = (int(round(self.Fila)), int(round(self.Columna))) 
+        Destino = (int(t_fila), int(t_columna)) 
+
+        Ruta, _, _ = Astar(Inicio, Destino, self.Mapa.Cuadricula)
+
+        if len(Ruta) > 1:
+            SiguientePaso = Ruta[1] 
+            TargetFila = float(SiguientePaso[0])
+            TargetCol = float(SiguientePaso[1])
+
+            dir_f = 1 if TargetFila > self.Fila else (-1 if TargetFila < self.Fila else 0)
+            dir_c = 1 if TargetCol > self.Columna else (-1 if TargetCol < self.Columna else 0)
+
+            self.Fila += dir_f * self.Velocidad * self.DeltaTiempo_actual
+            self.Columna += dir_c * self.Velocidad * self.DeltaTiempo_actual
+            
+            return True
+        return False
 
     def patrullar(self):
+        # Si no hay nadie a quien perseguir, primero vuelve a su origen usando A* (Evita quedarse parado)
+        dist_al_origen = math.sqrt((self.Fila - self.OrigenFila)**2 + (self.Columna - self.OrigenColumna)**2)
+        
+        if dist_al_origen > 0.5:
+            if self.estado_terminal != "RETORNANDO":
+                print("🔙 Enemigo: Perdió rastro. Volviendo a base.")
+                self.estado_terminal = "RETORNANDO"
+            return self.mover_con_astar(self.OrigenFila, self.OrigenColumna, 1.8)
+        
+        # Una vez en su origen, hace la patrulla normal horizontal que ya tenías
         if self.estado_terminal != "PATRULLANDO":
-            print("🚶‍♂️ Enemigo: Jugador perdido -> Merodeando el área.")
+            print("🚶‍♂️ Enemigo: Patrullando zona asignada.")
             self.estado_terminal = "PATRULLANDO"
-
-        # PATRULLA INTELIGENTE: En lugar de una línea fija, 
-        # se mueve lentamente hacia la zona donde está el jugador.
-        self.Velocidad = 1.8 # Velocidad de acecho lenta
-        return self.mover_logica(self.jugador_actual.Fila, self.jugador_actual.Columna)
-
-    def mover_logica(self, destino_fila, destino_col):
-        # Lógica de dirección hacia un punto objetivo
-        dir_x = 1 if destino_col > self.Columna else (-1 if destino_col < self.Columna else 0)
-        dir_y = 1 if destino_fila > self.Fila else (-1 if destino_fila < self.Fila else 0)
-
-        NuevaColumna = self.Columna + dir_x * self.Velocidad * self.DeltaTiempo_actual
-        NuevaFila = self.Fila + dir_y * self.Velocidad * self.DeltaTiempo_actual
-
-        # Colisión básica con la cuadrícula del mapa
-        if self.Mapa.Cuadricula[int(self.Fila)][int(NuevaColumna)] != 1:
-            self.Columna = NuevaColumna
-        if self.Mapa.Cuadricula[int(NuevaFila)][int(self.Columna)] != 1:
-            self.Fila = NuevaFila
-            
+        
+        self.Velocidad = 1.2 # Patrulla lenta para que el jugador pueda pasar sigiloso
+        proxima_c = self.Columna + self.Direccion * self.Velocidad * self.DeltaTiempo_actual
+        
+        # Si choca con pared (1) o salida (2), cambia de dirección
+        if self.Mapa.Cuadricula[int(self.Fila)][int(proxima_c + (0.4 * self.Direccion))] in [1, 2]:
+            self.Direccion *= -1 
+        else:
+            self.Columna = proxima_c 
         return True
 
-    def Dibujar(self, Pantalla): # Pantalla, superficie donde se dibuja
-        AnchoPantalla = Pantalla.get_width()
-        AltoPantalla = Pantalla.get_height()
-        Columnas = len(self.Mapa.Cuadricula[0])
-        Filas = len(self.Mapa.Cuadricula)
+    def Dibujar(self, Pantalla):
+        TX = Pantalla.get_width() // len(self.Mapa.Cuadricula[0])
+        TY = Pantalla.get_height() // len(self.Mapa.Cuadricula)
+        CentroX, CentroY = int((self.Columna + 0.5) * TX), int((self.Fila + 0.5) * TY)
+        Radio = int(min(TX, TY) * 0.35) 
         
-        TX = AnchoPantalla // Columnas
-        TY = AltoPantalla // Filas
-
-        Rectangulo = pygame.Rect(int(self.Columna * TX), int(self.Fila * TY), TX, TY)
-        pygame.draw.rect(Pantalla, (200, 0, 0), Rectangulo) # lo voy a dibujar rojo por el momento.
+        if self.Alerta: Color = (255, 0, 0) # Rojo: Te vio
+        elif Enemigo.Alerta_Global_Pos: Color = (255, 128, 0) # Naranja: Refuerzo
+        else: Color = (130, 0, 0) # Marrón: Patrulla
+            
+        pygame.draw.circle(Pantalla, Color, (CentroX, CentroY), Radio) 
+        pygame.draw.circle(Pantalla, (255, 255, 255), (CentroX, CentroY), int(Radio * 0.5)) 
 
     def ColisionaConJugador(self, Jugador):
-        # Ajuste el margen de colisión a 0.6 para el nuevo tamaño de celdas
-        return abs(self.Fila - Jugador.Fila) < 0.6 and abs(self.Columna - Jugador.Columna) < 0.6
-        
+        Distancia = math.sqrt((self.Fila - Jugador.Fila)**2 + (self.Columna - Jugador.Columna)**2)
+        return Distancia < 0.7
