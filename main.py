@@ -5,12 +5,32 @@
 import pygame
 import sys 
 import random # Importe random para seleccionar posisiones aleatorias para los enemigos
-from scripts.game import Game # Para llamar la clase game dede game.py
+from scripts.game import Game # Para llamar la clase game desde game.py
 
 # Inicie pygame para que mi juego corra y cree la funcion principal para controlar el juego.
 
 def main():
     pygame.init()
+    
+    # INTEGRACION DE MUSICA Y SONIDOS 
+    pygame.mixer.init() # Inicia el mezclador de sonidos
+    
+    # Variables de control para evitar  que los sonidos se reproduzcan multiples veces al cambiar de estado 
+    estado_anterior = ""
+    sonido_victoria_jugado = False
+    sonido_derrota_jugado = False
+
+    try:
+        # Carga de canciones Musica de fondo y Menu
+        ruta_musica_fondo = "assets/music/musica_fondo.mp3"
+        ruta_musica_menu = "assets/music/musica_menu.mp3"
+        
+        # Carga de efectos de sonido
+        sonido_victoria = pygame.mixer.Sound("assets/music/sonido_victoria.mp3")
+        sonido_choque = pygame.mixer.Sound("assets/sounds/sonido_choque.wav")
+        sonido_pierdo = pygame.mixer.Sound("assets/sounds/sonido_pierdo.mp3")
+    except:
+        print("Error: Revisa las rutas de los archivos de audio en assets/music y assets/sounds")
     
 
     # Obtener resolución real de la pantalla
@@ -58,7 +78,38 @@ def main():
                     # Para actualizar siempre la pantalla dentro del juego
                     JuegoPrincipal.Pantalla = Pantalla
 
+        #  GESTOR DE SONIDO DINÁMICO CORREGIDO 
+        if JuegoPrincipal.Estado != estado_anterior:
+            # Si el estado cambió, detenemos todo lo que esté sonando
+            pygame.mixer.music.stop()
+            pygame.mixer.stop()
+            
+            if JuegoPrincipal.Estado == "MENU":
+                pygame.mixer.music.load(ruta_musica_menu)
+                pygame.mixer.music.play(-1)
+                sonido_victoria_jugado = False
+                sonido_derrota_jugado = False
+
+            elif JuegoPrincipal.Estado == "JUGANDO":
+                pygame.mixer.music.load(ruta_musica_fondo)
+                pygame.mixer.music.play(-1)
+                sonido_victoria_jugado = False
+                sonido_derrota_jugado = False
+
+            elif JuegoPrincipal.Estado == "VICTORIA":
+                if not sonido_victoria_jugado:
+                    sonido_victoria.play()
+                    sonido_victoria_jugado = True
+
+            elif JuegoPrincipal.Estado == "GAME_OVER":
+                if not sonido_derrota_jugado:
+                    sonido_pierdo.play()
+                    sonido_derrota_jugado = True
+            
+            # Actualice el estado anterior para que esto solo ocurra una vez por cambio
+            estado_anterior = JuegoPrincipal.Estado
         
+
         JuegoPrincipal.Handle_Events(Eventos) # Para manejar los eventos del juego 
         
         # Limitamos los FPS a 60 y calculamos el DeltaTiempo de forma precisa
@@ -72,6 +123,13 @@ def main():
         # Lógica de reinicio 
         # Verificamos si el jugador perdió una vida o el tiempo se acabó 
         if hasattr(JuegoPrincipal, 'perdio') and JuegoPrincipal.perdio:
+            
+            # REPRODUCIR SONIDO CUANDO PIERDE CHOQUE O PINCHOS
+            try:
+                sonido_choque.play()
+            except:
+                pass
+
             # Reubicar al jugador a su posición inicial
             JuegoPrincipal.jugador.rect.topleft = (50, 50) 
             
@@ -82,6 +140,10 @@ def main():
             # Resetear la variable de pérdida para que el juego continúe
             JuegoPrincipal.perdio = False
             
+        # Lógica de victoria Sonido cuando llegas a la salida
+        if hasattr(JuegoPrincipal, 'gano') and JuegoPrincipal.gano:
+            # El sonido ya se maneja arriba por cambio de estado
+            JuegoPrincipal.gano = False 
 
         JuegoPrincipal.Update(DeltaTiempo) # Para actualizar la logica del juego
         JuegoPrincipal.Draw() # Para dibujar el juego en la pantalla 
