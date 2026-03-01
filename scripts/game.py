@@ -25,6 +25,15 @@ class Game:
         self.Temporizador = Timer(60)  # 60 segundos iniciales 
         self.Vidas = 3  # para controlar las las vidas del jugador 
 
+        #  CARGA DE SONIDOS 
+        try:
+            self.sonido_victoria = pygame.mixer.Sound("assets/music/sonido_victoria.mp3")
+            self.sonido_choque = pygame.mixer.Sound("assets/sounds/sonido_choque.wav")
+            self.sonido_pierdo = pygame.mixer.Sound("assets/sounds/sonido_pierdo.mp3")
+        except:
+            print("Error cargando sonidos en Game")
+        # 
+
         # Lista de posiciones estratégicas (Fila, Columna) donde pueden aparecer los enemigos
         self.Posiciones_Estrategicas = [
             (13, 10), (9, 5), (7, 15), (5, 5), (12, 18), (3, 10), (10, 2)
@@ -46,7 +55,7 @@ class Game:
     # la funsion para los eventos del teclado y mouse
     def Handle_Events(self, Eventos):
         for Evento in Eventos: # Para recorrer cada evento
-            if Evento.type == pygame.KEYDOWN: # para detectar si se presiono una tecla.
+            if Evento.type == pygame.KEYDOWN: # para detectar si se presiona una tecla.
                 if Evento.key == pygame.K_RETURN: # si fue la tecla enter.
                     # Para reintentar Si presionas ENTER en Menu, Game Over o Victoria, el juego inicia
                     if self.Estado == "MENU" or self.Estado == "GAME_OVER" or self.Estado == "VICTORIA": # si el estado es menu, game over o victoria al presionar enter 
@@ -74,7 +83,9 @@ class Game:
             self.Temporizador.Actualizar(DeltaTiempo) # para actualizar el temporizador.
 
             if self.Temporizador.TiempoTerminado(): # Para detectar si el tiempo se ha terminado
-                self.Estado = "GAME_OVER"  
+                self.Estado = "GAME_OVER"
+                try: self.sonido_pierdo.play() # Sonido al acabar el tiempo
+                except: pass
 
             # LOGICA DE VELOCIDAD SEGUN EL TERRENO (LODO)
             CeldaActual = self.Mapa.Cuadricula[int(self.Jugador.Fila)][int(self.Jugador.Columna)] # Para saber que pisa el jugador
@@ -86,8 +97,13 @@ class Game:
             # LOGICA DE DAÑO POR TRAMPAS
             if CeldaActual == 3: # Si el jugador pisa los pinchos rojos (3)
                 self.Vidas -= 1 # Resta una vida por el daño
+                try: self.sonido_choque.play() # Sonido al pisar trampa
+                except: pass
+                
                 if self.Vidas <= 0: # Para revisar si murio
                     self.Estado = "GAME_OVER" # Cambia a pantalla de derrota
+                    try: self.sonido_pierdo.play()
+                    except: pass
                 else:
                     # Limpiar alerta al morir por trampa
                     Enemigo.Alerta_Global_Pos = None # Para que los enemigos no te sigan al reaparecer 
@@ -100,17 +116,24 @@ class Game:
             self.Jugador.Mover(Teclas, DeltaTiempo)
 
             # Para DETECTAR SI EL JUGADOR GANA 
-            # Si la celda donde está el jugador es el número 2 (la salida amarilla)
+            # Si la celda donde está el jugador es el número 2
             if self.Mapa.Cuadricula[int(self.Jugador.Fila)][int(self.Jugador.Columna)] == 2: # si el jugador llega a la salida gana
                 self.Estado = "VICTORIA"
+                try: self.sonido_victoria.play() # Sonido al ganar
+                except: pass
 
             for EnemigoActual in self.Enemigos: # Para actualizar cada enemigo en la lista de enemigos 
                 EnemigoActual.Actualizar(DeltaTiempo, self.Jugador) 
 
                 if EnemigoActual.ColisionaConJugador(self.Jugador): # para detectar si el enemigo choca con el jugador 
                     self.Vidas -= 1 
+                    try: self.sonido_choque.play() # Sonido al chocar con enemigo
+                    except: pass
+                    
                     if self.Vidas <= 0:
                         self.Estado = "GAME_OVER"
+                        try: self.sonido_pierdo.play()
+                        except: pass
                     else:
                         # Reaparecer al inicio si pierde una vida
                         Enemigo.Alerta_Global_Pos = None # Resetear alerta de colmena al morir
