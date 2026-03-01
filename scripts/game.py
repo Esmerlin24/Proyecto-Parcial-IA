@@ -42,7 +42,7 @@ class Game:
         self.Enemigos = [ # Lista de enemigos con sus posiciones iniciales ajustadas al nuevo mapa
             Enemigo(self.Mapa, 13, 10), # Enemigo 1 bloqueando el pasillo de la salida
             Enemigo(self.Mapa, 9, 5),   # Enemigo 2 vigilando la entrada al lodo
-            Enemigo(self.Mapa, 7, 15)   # Enemigo 3 patrullando el pasillo central derecho
+            Enemigo(self.Mapa, 7, 14),   # Enemigo 3 patrullando el pasillo central derecho
         ] 
         
     # Función para reposicionar enemigos de forma aleatoria
@@ -70,9 +70,9 @@ class Game:
                         self.Enemigos = [  # Reinicia los enemigos a sus posisiones estrategicas
                             Enemigo(self.Mapa, 13, 10), # Guardia de la salida
                             Enemigo(self.Mapa, 9, 5),   # Centinela del lodo
-                            Enemigo(self.Mapa, 7, 15)   # Interceptor central
+                            Enemigo(self.Mapa, 7, 14)   # Interceptor central
                         ]
-                        # Al empezar de cero, también los barajamos
+                        # Al empezar de cero, reposicionamos los enemigos de forma aleatoria 
                         self.Reposicionar_Enemigos_Aleatorio()
 
     # El metodo para actualizar la logica del juego
@@ -87,8 +87,18 @@ class Game:
                 try: self.sonido_pierdo.play() # Sonido al acabar el tiempo
                 except: pass
 
+        
+            # Usamos round para que detecte el bloque donde está el centro del jugador
+            f_idx = int(round(self.Jugador.Fila))
+            c_idx = int(round(self.Jugador.Columna))
+            
+            # Asegurar que los índices no se salgan del mapa por el redondeo
+            f_idx = max(0, min(f_idx, len(self.Mapa.Cuadricula) - 1))
+            c_idx = max(0, min(c_idx, len(self.Mapa.Cuadricula[0]) - 1))
+
+            CeldaActual = self.Mapa.Cuadricula[f_idx][c_idx] # Para saber que pisa el jugador
+            
             # LOGICA DE VELOCIDAD SEGUN EL TERRENO (LODO)
-            CeldaActual = self.Mapa.Cuadricula[int(self.Jugador.Fila)][int(self.Jugador.Columna)] # Para saber que pisa el jugador
             if CeldaActual == 4: # Si el jugador esta pisando lodo (4)
                 self.Jugador.Velocidad = 2.0 # Baja la velocidad del jugador 
             else:
@@ -115,9 +125,8 @@ class Game:
             Teclas = pygame.key.get_pressed() # Para obtener las teclas que se estan presionandoen ese momento.
             self.Jugador.Mover(Teclas, DeltaTiempo)
 
-            # Para DETECTAR SI EL JUGADOR GANA 
-            # Si la celda donde está el jugador es el número 2
-            if self.Mapa.Cuadricula[int(self.Jugador.Fila)][int(self.Jugador.Columna)] == 2: # si el jugador llega a la salida gana
+            
+            if CeldaActual == 2: # si el jugador llega a la salida gana
                 self.Estado = "VICTORIA"
                 try: self.sonido_victoria.play() # Sonido al ganar
                 except: pass
