@@ -27,9 +27,9 @@ class Mapa:
             [1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1],
             [1,0,0,0,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,1], # Zona de lodo con escape lateral
             [1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], # Espacio de maniobra para evitar enemigos
+            [1,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1], # Espacio de maniobra para evitar enemigos
             [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], # Salida (2) en zona abierta para evitar bloqueos
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], # Salida (2) en zona abierta para evitar bloqueos
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
         ]
         
