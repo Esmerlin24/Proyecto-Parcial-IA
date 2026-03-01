@@ -38,14 +38,16 @@ class Mapa:
             self.ImagenSuelo = pygame.image.load("assets/images/suelo.jpg").convert()
             self.ImagenPared = pygame.image.load("assets/images/pared.jpg").convert()
             self.ImagenSalida = pygame.image.load("assets/images/salida.jpg").convert()
-            self.ImagenPinchos = pygame.image.load("assets/images/pinchos.jpg").convert()
-            self.ImagenLodo = pygame.image.load("assets/images/lodo.jpg").convert()
+            self.ImagenPinchos = pygame.image.load("assets/images/pinchos.png").convert_alpha()
+            self.ImagenSueloSinPinchos = pygame.image.load("assets/images/suelo_sin_pinchos.jpg").convert()
+            self.ImagenLodo = pygame.image.load("assets/images/lodo.png").convert_alpha()
         except:
-            print("Error: No se pudieron cargar las imágenes. Asegúrate de que los archivos .jpg existen en assets/images/")
+            print("Error: No se pudieron cargar las imágenes. Asegúrate de que los nombres y extensiones sean correctos.")
             self.ImagenSuelo = None
             self.ImagenPared = None
             self.ImagenSalida = None
             self.ImagenPinchos = None
+            self.ImagenSueloSinPinchos = None
             self.ImagenLodo = None
 
         # Variables para la animación de los pinchos
@@ -99,13 +101,13 @@ class Mapa:
                         pygame.draw.rect(Pantalla, (255,255,0), Rectangulo) # Para dibujar la salida de color amarillo.
 
                 elif Valor == 3:
-                    # Animación: alterna entre la imagen de pinchos y la imagen de suelo
+                    # Animación: alterna entre la imagen de pinchos y la imagen de suelo sin pinchos
                     if self.MostrarPinchos and self.ImagenPinchos:
                         ImgPinchosEsc = pygame.transform.scale(self.ImagenPinchos, (TamañoCeldaX, TamañoCeldaY))
                         Pantalla.blit(ImgPinchosEsc, (PosicionX, PosicionY))
-                    elif self.ImagenSuelo:
-                        ImgSueloEsc = pygame.transform.scale(self.ImagenSuelo, (TamañoCeldaX, TamañoCeldaY))
-                        Pantalla.blit(ImgSueloEsc, (PosicionX, PosicionY))
+                    elif not self.MostrarPinchos and self.ImagenSueloSinPinchos:
+                        ImgSueloSinEsc = pygame.transform.scale(self.ImagenSueloSinPinchos, (TamañoCeldaX, TamañoCeldaY))
+                        Pantalla.blit(ImgSueloSinEsc, (PosicionX, PosicionY))
                     else:
                         pygame.draw.rect(Pantalla, (200,0,0) if self.MostrarPinchos else (30,30,30), Rectangulo)
 
