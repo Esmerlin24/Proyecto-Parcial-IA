@@ -6,7 +6,7 @@ import pygame
 import sys 
 import random # Importe random para seleccionar posisiones aleatorias para los enemigos
 from scripts.game import Game # Para llamar la clase game desde game.py
-import math # Importado para efectos visuales
+import math # Importe math para el efecto de brillo en los botones y animaciones de circulos en Game Over
 
 # Inicie pygame para que mi juego corra y cree la funcion principal para controlar el juego.
 
@@ -22,16 +22,16 @@ def main():
     sonido_derrota_jugado = False
 
     try:
-        # Carga de canciones Musica de fondo y Menu
+        # Para cargar de canciones Musica de fondo y Menu
         ruta_musica_fondo = "assets/music/musica_fondo.mp3"
         ruta_musica_menu = "assets/music/musica_menu.mp3"
         
-        # Carga de efectos de sonido
+        # Para cargar de efectos de sonido
         sonido_victoria = pygame.mixer.Sound("assets/music/sonido_victoria.mp3")
         sonido_choque = pygame.mixer.Sound("assets/sounds/sonido_choque.wav")
         sonido_pierdo = pygame.mixer.Sound("assets/sounds/sonido_pierdo.mp3")
 
-        # CARGA DE IMAGEN DE FONDO PARA EL MENÚ 
+        # Para cargar la imagen de fondo del menu  
         imagen_fondo_menu = pygame.image.load("assets/images/fondo_menu.jpg")
     except:
         print("Error: Revisa las rutas de los archivos de audio e imágenes en assets/")
@@ -64,6 +64,8 @@ def main():
     # FUENTES 
     fuente_botones = pygame.font.SysFont("Arial Black", 40)
     fuente_boom = pygame.font.SysFont("Arial Black", 100)
+    # Fuente añadida para el título en Times New Roman
+    fuente_titulo = pygame.font.SysFont("Times New Roman", 120, bold=True)
     
     # Inicializar rectángulos globales para los botones
     rect_jugar = pygame.Rect(0,0,300,80)
@@ -127,7 +129,7 @@ def main():
                             pygame.event.clear()
                             break
 
-        #  GESTOR DE SONIDO DINÁMICO CORREGIDO 
+        # Para controlar la musica y sonidos segun el estado del juego, evitando que se repitan al cambiar de estado
         if JuegoPrincipal.Estado != estado_anterior:
             pygame.mixer.music.stop()
             pygame.mixer.stop()
@@ -172,6 +174,19 @@ def main():
             fondo_esc = pygame.transform.scale(imagen_fondo_menu, (anchoPantalla, altoPantalla))
             Pantalla.blit(fondo_esc, (0,0))
             
+           
+            # Para dibujar el titulo con sombra 
+            txt_titulo = fuente_titulo.render("LA ÚLTIMA SALIDA", True, (255, 255, 255))
+            # Sombra para mejor legibilidad
+            txt_sombra = fuente_titulo.render("LA ÚLTIMA SALIDA", True, (0, 0, 0))
+            
+            rect_titulo = txt_titulo.get_rect(center=(anchoPantalla // 2, altoPantalla // 4))
+            
+            # Para dibujar  sombra y luego el texto principal
+            Pantalla.blit(txt_sombra, (rect_titulo.x + 5, rect_titulo.y + 5))
+            Pantalla.blit(txt_titulo, rect_titulo)
+            
+           # Para dibujare los botones con efecto de brillo y cambio de color 
             tiempo_anim = pygame.time.get_ticks()
             brillo = int(80 * math.sin(tiempo_anim * 0.005) + 80)
             
@@ -180,6 +195,7 @@ def main():
             pygame.draw.rect(Pantalla, color_j, rect_jugar, border_radius=25)
             pygame.draw.rect(Pantalla, (200, 200, 255), rect_jugar, 3, border_radius=25)
             txt_j = fuente_botones.render("JUGAR", True, (255,255,255))
+            # Para dibujar el texto del botón
             Pantalla.blit(txt_j, txt_j.get_rect(center=rect_jugar.center))
             
             rect_salir.center = (anchoPantalla//2, altoPantalla//2 + 160)
@@ -187,6 +203,7 @@ def main():
             pygame.draw.rect(Pantalla, color_s, rect_salir, border_radius=25)
             pygame.draw.rect(Pantalla, (200, 200, 255), rect_salir, 3, border_radius=25)
             txt_s = fuente_botones.render("SALIR", True, (255,255,255))
+            # Para dibujar el texto del botón
             Pantalla.blit(txt_s, txt_s.get_rect(center=rect_salir.center))
 
         elif JuegoPrincipal.Estado == "GAME_OVER":
