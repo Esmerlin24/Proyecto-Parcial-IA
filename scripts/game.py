@@ -25,7 +25,7 @@ class Game:
         self.Temporizador = Timer(60)  # 60 segundos iniciales 
         self.Vidas = 3  # para controlar las las vidas del jugador 
 
-        #  CARGA DE SONIDOS 
+        #  Para cargar los sonidos del juego
         try:
             self.sonido_victoria = pygame.mixer.Sound("assets/music/sonido_victoria.mp3")
             self.sonido_choque = pygame.mixer.Sound("assets/sounds/sonido_choque.wav")
@@ -39,7 +39,7 @@ class Game:
             (13, 10), (9, 5), (7, 15), (5, 5), (12, 18), (3, 10), (10, 2)
         ]
 
-        self.Enemigos = [ # Lista de enemigos con sus posiciones iniciales ajustadas al nuevo mapa
+        self.Enemigos = [ # Lista de enemigos con sus posiciones iniciales
             Enemigo(self.Mapa, 13, 10), # Enemigo 1 bloqueando el pasillo de la salida
             Enemigo(self.Mapa, 9, 5),   # Enemigo 2 vigilando la entrada al lodo
             Enemigo(self.Mapa, 7, 14),   # Enemigo 3 patrullando el pasillo central derecho
@@ -156,7 +156,7 @@ class Game:
 
         if self.Estado == "MENU": # Para dibujar el menu 
             self.Pantalla.fill((0, 120, 252)) # color del menu 
-            Fuente = pygame.font.SysFont("Arial", 50) # Para crear una fuente ariel 50
+            Fuente = pygame.font.SysFont("timesnewroman", 50, bold=True) # Para crear una fuente times new roman en negrita
             Texto = Fuente.render("LA ULTIMA SALIDA", True, (255, 255, 255)) # para creal el texto del titulo del juego 
             self.Pantalla.blit(Texto, (self.Pantalla.get_width()//2 - Texto.get_width()//2, 200)) 
             
