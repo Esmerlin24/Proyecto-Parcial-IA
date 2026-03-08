@@ -24,6 +24,7 @@ class Game:
         self.Jugador = Player(self.Mapa) # Para crear el jugador y pasarle el mapa para que pueda revisar colisiones 
         self.Temporizador = Timer(60)  # 60 segundos iniciales 
         self.Vidas = 3  # para controlar las las vidas del jugador 
+        self.joystick = None # Variable para almacenar el control conectado
 
         #  Para cargar los sonidos del juego
         try:
@@ -55,9 +56,16 @@ class Game:
     # la funsion para los eventos del teclado y mouse
     def Handle_Events(self, Eventos):
         for Evento in Eventos: # Para recorrer cada evento
-            if Evento.type == pygame.KEYDOWN: # para detectar si se presiona una tecla.
-                if Evento.key == pygame.K_RETURN: # si fue la tecla enter.
-                    # Para reintentar Si presionas ENTER en Menu, Game Over o Victoria, el juego inicia
+            # -Para los botones del control
+            boton_x_presionado = False
+            if Evento.type == pygame.JOYBUTTONDOWN:
+                if Evento.button == 0: # Botón X en control de PS3
+                    boton_x_presionado = True
+
+            if Evento.type == pygame.KEYDOWN or boton_x_presionado: # para detectar si se presiona una tecla o botón.
+                # Verificamos si fue ENTER o el botón X del mando
+                if (Evento.type == pygame.KEYDOWN and Evento.key == pygame.K_RETURN) or boton_x_presionado: 
+                    # Para reintentar Si presionas ENTER o X en Menu, Game Over o Victoria, el juego inicia
                     if self.Estado == "MENU" or self.Estado == "GAME_OVER" or self.Estado == "VICTORIA": # si el estado es menu, game over o victoria al presionar enter 
                         self.Estado = "JUGANDO" # Cambia el estado a jugando para iniciar el juego 
                         self.Vidas = 3  # reinicia las vidas 
@@ -122,8 +130,29 @@ class Game:
                     # Reposicionar enemigos al morir por trampa
                     self.Reposicionar_Enemigos_Aleatorio()
 
-            Teclas = pygame.key.get_pressed() # Para obtener las teclas que se estan presionandoen ese momento.
-            self.Jugador.Mover(Teclas, DeltaTiempo)
+            
+            Teclas = pygame.key.get_pressed() # Para obtener las teclas que se estan presionando en ese momento.
+            
+            # Diccionario para enviar inputs al jugador (Joysticks + D-Pad)
+            inputs_control = {'x': 0, 'y': 0, 'x_der': 0, 'y_der': 0, 'dpad_x': 0, 'dpad_y': 0}
+            
+            # Leer todos los ejes si el control está conectado
+            if self.joystick:
+                # Joystick Izquierdo Ejes 0 y 1
+                inputs_control['x'] = self.joystick.get_axis(0)
+                inputs_control['y'] = self.joystick.get_axis(1)
+                
+                # Joystick Derecho Ejes 2 y 3 
+                inputs_control['x_der'] = self.joystick.get_axis(2)
+                inputs_control['y_der'] = self.joystick.get_axis(3)
+                
+                # Crucecita  D-Pad Hat 0
+                dpad = self.joystick.get_hat(0)
+                inputs_control['dpad_x'] = dpad[0]
+                inputs_control['dpad_y'] = -dpad[1] # Invertimos Y porque el Hat es positivo hacia arriba
+
+            #  las teclas como los inputs del joystick al jugador
+            self.Jugador.Mover(Teclas, DeltaTiempo, inputs_control)
 
             
             if CeldaActual == 2: # si el jugador llega a la salida gana
@@ -161,7 +190,7 @@ class Game:
             self.Pantalla.blit(Texto, (self.Pantalla.get_width()//2 - Texto.get_width()//2, 200)) 
             
             FuenteSub = pygame.font.SysFont("Arial", 30) # Para crear la fuente del subtitulo
-            TextoSub = FuenteSub.render("Presiona ENTER para Empezar", True, (255, 255, 255))
+            TextoSub = FuenteSub.render("Presiona ENTER o (X) para Empezar", True, (255, 255, 255))
             self.Pantalla.blit(TextoSub, (self.Pantalla.get_width()//2 - TextoSub.get_width()//2, 350))
 
         elif self.Estado == "JUGANDO":  # para dibujar el juego solo si esta jugando 
@@ -186,7 +215,7 @@ class Game:
             
             # Mensaje de reintento
             FuenteR = pygame.font.SysFont("Arial", 30)
-            TextoR = FuenteR.render("Presiona ENTER para Reintentar", True, (255, 255, 255))
+            TextoR = FuenteR.render("Presiona ENTER o (X) para Reintentar", True, (255, 255, 255))
             self.Pantalla.blit(TextoR, (self.Pantalla.get_width() // 2 - TextoR.get_width() // 2, 350))
 
         elif self.Estado == "VICTORIA": # Pantalla de ganar
@@ -197,5 +226,5 @@ class Game:
             
             # Mensaje de reintento
             FuenteR = pygame.font.SysFont("Arial", 30)
-            TextoR = FuenteR.render("Presiona ENTER para jugar de nuevo", True, (255, 255, 255))
+            TextoR = FuenteR.render("Presiona ENTER o (X) para jugar de nuevo", True, (255, 255, 255))
             self.Pantalla.blit(TextoR, (self.Pantalla.get_width() // 2 - TextoR.get_width() // 2, 350))

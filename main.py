@@ -6,55 +6,66 @@ import pygame
 import sys 
 import random # Importe random para seleccionar posisiones aleatorias para los enemigos
 from scripts.game import Game # Para llamar la clase game desde game.py
-import math # Importe math para el efecto de brillo en los botones y animaciones de circulos en Game Over
+import math # Importe math para calcular la distancia entre el enemigo y el jugador.
 
 # Inicie pygame para que mi juego corra y cree la funcion principal para controlar el juego.
 
 def main():
     pygame.init()
     
-    # INTEGRACION DE MUSICA y SONIDOS 
+    # Para detectar si hay un control conectado 
+    pygame.joystick.init() # Para inicializar el modulo de joystick 
+    joystick = None # la variable para almacenar el control cuando se detecte 
+    if pygame.joystick.get_count() > 0: # si hay al menos un control conectado, se inicializa el primero y se muestra su nombre en la consola 
+        joystick = pygame.joystick.Joystick(0) # Para inicializar el primer control conectado 
+        joystick.init() # Para iniciar el control y que pueda ser usado en el juego
+        print(f"Control detectado: {joystick.get_name()}") # Para mostral el nombre del control en la consola 
+    
+
+    # Musica y sonidos 
     pygame.mixer.init() # Inicia el mezclador de sonidos
     
     # Variables de control para evitar que los sonidos se reproduzcan multiples veces al cambiar de estado 
-    estado_anterior = ""
-    sonido_victoria_jugado = False
-    sonido_derrota_jugado = False
+    estado_anterior = "" # Para almacenar el estado anterior del juego y detectar cambios de estado para controlar la musica y los sonidos 
+    sonido_victoria_jugado = False # Para controlar que el sonido de victoria solo se reproduzca una vez al ganar 
+    sonido_derrota_jugado = False  # Para controlar que el sonido de derrota solo se reproduzca una vez al perder 
 
-    try:
+    try: # Para cargar los archivos de audio e imagenes y que no de error 
         # Para cargar de canciones Musica de fondo y Menu
-        ruta_musica_fondo = "assets/music/musica_fondo.mp3"
-        ruta_musica_menu = "assets/music/musica_menu.mp3"
+        ruta_musica_fondo = "assets/music/musica_fondo.mp3" # Para cargar la musica de fondo del juego 
+        ruta_musica_menu = "assets/music/musica_menu.mp3" # Para cargar la musica del menu del juego 
         
         # Para cargar de efectos de sonido
-        sonido_victoria = pygame.mixer.Sound("assets/music/sonido_victoria.mp3")
-        sonido_choque = pygame.mixer.Sound("assets/sounds/sonido_choque.wav")
-        sonido_pierdo = pygame.mixer.Sound("assets/sounds/sonido_pierdo.mp3")
+        sonido_victoria = pygame.mixer.Sound("assets/music/sonido_victoria.mp3") # Para cargar el sonido de victoria en el juego 
+        sonido_choque = pygame.mixer.Sound("assets/sounds/sonido_choque.wav") # Para cargar el sonido de choque entre el jugador y los enemigos 
+        sonido_pierdo = pygame.mixer.Sound("assets/sounds/sonido_pierdo.mp3") # Para cargar el sonido de derrota en el juego 
 
         # Para cargar la imagen de fondo del menu  
         imagen_fondo_menu = pygame.image.load("assets/images/fondo_menu.jpg")
-    except:
-        print("Error: Revisa las rutas de los archivos de audio e imágenes en assets/")
+    except: 
+        print("Error: Revisa las rutas de los archivos de audio e imágenes en assets/") # Para mostrar un mensaje de error si no se puede cargar la imagen. 
     
 
     # Obtener resolución real de la pantalla
 
-    infoPantalla = pygame.display.Info() # Para obtener la informacion de la pantalla actual    
+    infoPantalla = pygame.display.Info() # Para obtener la informacion de la pantalla actual     
     anchoPantalla = infoPantalla.current_w # Para obtener el ancho de la pantalla actual 
     altoPantalla = infoPantalla.current_h # Para obtener la altura de la pantalla actual 
 
     # Para que el juego se vea en pantalla completa 
     Pantalla = pygame.display.set_mode((anchoPantalla, altoPantalla), pygame.FULLSCREEN)
-    pygame.display.set_caption("La Ultima Salida")
+    pygame.display.set_caption("La Ultima Salida") # Para ponerle el titulo a la ventana del juego 
 
     # Para controlar el tiempo 
     Reloj = pygame.time.Clock()
-    Velocidad = 60  
+    Velocidad = 60  # Para establecer la velocidad de actualizacion del juego a 60 fps, lo que me garaniza que el juego sea fluido.
 
     # Objeto Principal del juego
     JuegoPrincipal = Game(Pantalla)
+    # Pasar el joystick al juego principal para que pueda usarse en game.py
+    JuegoPrincipal.joystick = joystick
 
-    # Definir posiciones estratégicas para que los enemigos aparezcan en lugares distintos
+    # Para  posiciones estratégicas para que los enemigos aparezcan en lugares distintos
 
     posiciones_estrategicas = [(200, 200), (800, 200), (200, 600), (900, 500), (500, 300)]
 
@@ -62,24 +73,25 @@ def main():
     EnPantallaCompleta = True # variable para controlar el estado de pantalla completa 
 
     # FUENTES 
-    fuente_botones = pygame.font.SysFont("Arial Black", 40)
+    fuente_botones = pygame.font.SysFont("Arial Black", 40) 
     fuente_boom = pygame.font.SysFont("Arial Black", 100)
+
     # Fuente añadida para el título en Times New Roman
     fuente_titulo = pygame.font.SysFont("Times New Roman", 120, bold=True)
     
     # Inicializar rectángulos globales para los botones
-    rect_jugar = pygame.Rect(0,0,300,80)
+    rect_jugar = pygame.Rect(0,0,300,80) # Rectangulo para el boton jugar, se inicializa con tamaño pero sin posicion, la posicion se actualiza cada frame para seguir el mouse 
     rect_salir = pygame.Rect(0,0,300,80)
     rect_reintentar = pygame.Rect(0,0,350,80)
     rect_volver_menu = pygame.Rect(0,0,450,80)
 
     #  VARIABLES PARA EL EFECTO DE CHISPITAS 
-    chispitas = []
-    for _ in range(100):
-        chispitas.append({
-            'x': random.randint(0, anchoPantalla),
-            'y': random.randint(0, altoPantalla),
-            'vel_y': random.uniform(-2, -5),
+    chispitas = [] # lista para almacenar las chispas
+    for _ in range(100): # para crear 100 chispas con posiciones y velocidades aleatorias
+        chispitas.append({ # Cada chispa es un diccionarios con su posicion, velocidad y color 
+            'x': random.randint(0, anchoPantalla), # Para generar una posicion x aleatoria dentro del ancho de la pantalla. 
+            'y': random.randint(0, altoPantalla), # Para generar una posicion y aleatoria dentro del alto de la pantalla 
+            'vel_y': random.uniform(-2, -5), # Para generar una velocidad vertical aleatoria hacia arriba, entre -2 y -5 para que suban a diferentes velocidades.
             'vel_x': random.uniform(-1, 1),
             'color': random.choice([(255, 255, 255), (255, 255, 0), (255, 215, 0)]) # Blanco y Dorado
         })
@@ -119,12 +131,14 @@ def main():
                     elif JuegoPrincipal.Estado == "GAME_OVER" or JuegoPrincipal.Estado == "VICTORIA":
                         if rect_reintentar.collidepoint(mouse_pos):
                             JuegoPrincipal = Game(Pantalla) 
+                            JuegoPrincipal.joystick = joystick # Asegurar que el nuevo objeto tenga el control
                             JuegoPrincipal.Estado = "JUGANDO"
                             pygame.event.clear()
                             break 
                             
                         elif rect_volver_menu.collidepoint(mouse_pos):
                             JuegoPrincipal = Game(Pantalla)
+                            JuegoPrincipal.joystick = joystick # Asegurar que el nuevo objeto tenga el control
                             JuegoPrincipal.Estado = "MENU"
                             pygame.event.clear()
                             break
@@ -174,7 +188,7 @@ def main():
             fondo_esc = pygame.transform.scale(imagen_fondo_menu, (anchoPantalla, altoPantalla))
             Pantalla.blit(fondo_esc, (0,0))
             
-           
+            
             # Para dibujar el titulo con sombra 
             txt_titulo = fuente_titulo.render("LA ÚLTIMA SALIDA", True, (255, 255, 255))
             # Sombra para mejor legibilidad

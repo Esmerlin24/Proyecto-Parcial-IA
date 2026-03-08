@@ -21,7 +21,7 @@ class Player:
         self.sprite_sheet = pygame.image.load("assets/images/jugador_completo.png").convert_alpha() # Cargue la imagen del jugador para manejar transparencia y animaciones 
         
         # Diccionario para guardar las listas de frames por dirección
-        # 0: Abajo, 1: Izquierda, 2: Derecha, 3: Arriba (según el orden de la imagen)
+        # 0: Abajo, 1: Izquierda, 2: Derecha, 3: Arriba según el orden de la imagen
         self.animaciones = {0: [], 1: [], 2: [], 3: []}
         self.direccion_actual = 0 # Empezamos mirando hacia abajo
         self.frame_index = 0
@@ -39,7 +39,7 @@ class Player:
                 
                
                 
-                # Tomamos el color del primer píxel (esquina superior izquierda) y lo hacemos invisible
+                # Tomamos el color del primer píxel esquina superior izquierda y lo hacemos invisible
                 color_fondo = recorte.get_at((0,0))
                 recorte.set_colorkey(color_fondo)
                 
@@ -49,13 +49,14 @@ class Player:
 
        # Función que mueve el jugador
     
-    def Mover(self, Teclas, DeltaTiempo):   
+    def Mover(self, Teclas, DeltaTiempo, inputs_control=None):   
 
         NuevaFila = self.Fila # Para calcular la nueva funsion vertical del jugador 
         NuevaColumna = self.Columna # Para calcular la nueva funsion horizontal del jugador
 
         se_mueve = False # Para saber si debemos animar o quedarnos quietos
 
+        # Para el teclado 
         if Teclas[pygame.K_UP]:  # si se presiona la flecha hacia arriba, se mueve hacia arriba 
             NuevaFila -= self.Velocidad * DeltaTiempo 
             self.direccion_actual = 3 # Fila de Arriba
@@ -74,8 +75,32 @@ class Player:
             self.direccion_actual = 2 # Fila de Derecha
             se_mueve = True
 
+        # Para el control PS3 Joystick Izquierdo, Derecho y D-Pad
+        if not se_mueve and inputs_control:
+            
+            mov_x = inputs_control.get('x', 0) + inputs_control.get('x_der', 0) + inputs_control.get('dpad_x', 0)
+            mov_y = inputs_control.get('y', 0) + inputs_control.get('y_der', 0) + inputs_control.get('dpad_y', 0)
+
+            if mov_y < -0.4: # Movimiento hacia arriba
+                NuevaFila -= self.Velocidad * DeltaTiempo
+                self.direccion_actual = 3
+                se_mueve = True
+            elif mov_y > 0.4: # Movimiento hacia abajo
+                NuevaFila += self.Velocidad * DeltaTiempo
+                self.direccion_actual = 0
+                se_mueve = True
+            
+            if mov_x < -0.4: # Movimiento hacia la izquierda
+                NuevaColumna -= self.Velocidad * DeltaTiempo
+                self.direccion_actual = 1
+                se_mueve = True
+            elif mov_x > 0.4: # Movimiento hacia la derecha
+                NuevaColumna += self.Velocidad * DeltaTiempo
+                self.direccion_actual = 2
+                se_mueve = True
+
        
-        if se_mueve: # Si el jugador se esta moviendo, actualizamos la animacion 
+        if se_mueve: # Si el jugador se esta moviendo,se actualiza la animacion 
             self.timer_animacion += DeltaTiempo #
             if self.timer_animacion >= self.velocidad_animacion:
                 self.timer_animacion = 0
@@ -84,11 +109,11 @@ class Player:
             self.frame_index = 0 # Si está quieto, usa el primer cuadro de la fila
         
        
-        # Añadimos un margen (0.2) para que el "cuadrado" del jugador no entre en la pared
+        # Añadi un margen (0.2) para que el "cuadrado" del jugador no entre en la pared
         margen = 0.2
 
         # Revisar colisión en Columna (Eje X)
-        # Evaluamos el lado izquierdo y derecho del jugador
+        # Para  el lado izquierdo y derecho del jugador
         if self.Mapa.Cuadricula[int(self.Fila + margen)][int(NuevaColumna + margen)] != 1 and \
            self.Mapa.Cuadricula[int(self.Fila + 1 - margen)][int(NuevaColumna + margen)] != 1 and \
            self.Mapa.Cuadricula[int(self.Fila + margen)][int(NuevaColumna + 1 - margen)] != 1 and \
@@ -96,7 +121,7 @@ class Player:
             self.Columna = NuevaColumna
 
         # Revisar colisión en Fila (Eje Y)
-        # Evaluamos el lado superior e inferior del jugador
+        # Para  el lado superior e inferior del jugador
         if self.Mapa.Cuadricula[int(NuevaFila + margen)][int(self.Columna + margen)] != 1 and \
            self.Mapa.Cuadricula[int(NuevaFila + 1 - margen)][int(self.Columna + margen)] != 1 and \
            self.Mapa.Cuadricula[int(NuevaFila + margen)][int(self.Columna + 1 - margen)] != 1 and \
@@ -119,12 +144,11 @@ class Player:
         PosicionY = int(self.Fila * TamañoCeldaY)  # Para calcular la posicion vertical del jugador multiplicando su fila por el tamaño de cada celda 
 
        
-        # 1. Obtenemos el cuadro que toca según la dirección
+        # Obtenemos el cuadro que toca según la dirección
         sprite_actual = self.animaciones[self.direccion_actual][self.frame_index]
         
-        # 2. Escalamos el sprite para que se ajuste a la celda sin perder su forma
+        #. Escalamos el sprite para que se ajuste a la celda sin perder su forma
         sprite_escalado = pygame.transform.scale(sprite_actual, (TamañoCeldaX, TamañoCeldaY))
         
-        # 3. Dibujamos la imagen directamente 
-        Pantalla.blit(sprite_escalado, (PosicionX, PosicionY)) # para dibujar el rectangulo del jugador en la pantalla con su color 
-      
+        #  Dibujamos la imagen directamente 
+        Pantalla.blit(sprite_escalado, (PosicionX, PosicionY)) # para dibujar el rectangulo del jugador en la pantalla con su color
