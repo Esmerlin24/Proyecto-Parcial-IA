@@ -261,7 +261,7 @@ def main():
                 tamanio = random.randint(2, 5)
                 pygame.draw.circle(Pantalla, c['color'], (int(c['x']), int(c['y'])), tamanio)
 
-            texto_ganaste = fuente_boom.render("¡NIVEL COMPLETADO!", True, (255, 255, 255))
+            texto_ganaste = fuente_boom.render("¡GANASTE!", True, (255, 255, 255))
             Pantalla.blit(texto_ganaste, texto_ganaste.get_rect(center=(anchoPantalla//2, altoPantalla//2 - 150)))
 
             # Botón REINTENTAR (Victoria)
