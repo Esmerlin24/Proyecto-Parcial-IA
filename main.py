@@ -185,7 +185,9 @@ def main():
             JuegoPrincipal.Draw()
 
         elif JuegoPrincipal.Estado == "MENU":
-            fondo_esc = pygame.transform.scale(imagen_fondo_menu, (anchoPantalla, altoPantalla))
+            # Para dibujar el fondo del menu escalado a la resolucion actual de la pantalla
+            ancho_actual, alto_actual = Pantalla.get_size()
+            fondo_esc = pygame.transform.scale(imagen_fondo_menu, (ancho_actual, alto_actual))
             Pantalla.blit(fondo_esc, (0,0))
             
             
@@ -194,7 +196,7 @@ def main():
             # Sombra para mejor legibilidad
             txt_sombra = fuente_titulo.render("LA ÚLTIMA SALIDA", True, (0, 0, 0))
             
-            rect_titulo = txt_titulo.get_rect(center=(anchoPantalla // 2, altoPantalla // 4))
+            rect_titulo = txt_titulo.get_rect(center=(ancho_actual // 2, alto_actual // 4))
             
             # Para dibujar  sombra y luego el texto principal
             Pantalla.blit(txt_sombra, (rect_titulo.x + 5, rect_titulo.y + 5))
@@ -204,7 +206,7 @@ def main():
             tiempo_anim = pygame.time.get_ticks()
             brillo = int(80 * math.sin(tiempo_anim * 0.005) + 80)
             
-            rect_jugar.center = (anchoPantalla//2, altoPantalla//2 + 50)
+            rect_jugar.center = (ancho_actual//2, alto_actual//2 + 50)
             color_j = (50 + brillo, 50 + brillo, 255) if rect_jugar.collidepoint(mouse_pos) else (40, 40, 40)
             pygame.draw.rect(Pantalla, color_j, rect_jugar, border_radius=25)
             pygame.draw.rect(Pantalla, (200, 200, 255), rect_jugar, 3, border_radius=25)
@@ -212,7 +214,7 @@ def main():
             # Para dibujar el texto del botón
             Pantalla.blit(txt_j, txt_j.get_rect(center=rect_jugar.center))
             
-            rect_salir.center = (anchoPantalla//2, altoPantalla//2 + 160)
+            rect_salir.center = (ancho_actual//2, alto_actual//2 + 160)
             color_s = (50 + brillo, 50 + brillo, 255) if rect_salir.collidepoint(mouse_pos) else (40, 40, 40)
             pygame.draw.rect(Pantalla, color_s, rect_salir, border_radius=25)
             pygame.draw.rect(Pantalla, (200, 200, 255), rect_salir, 3, border_radius=25)
@@ -224,22 +226,24 @@ def main():
             Pantalla.fill((15, 0, 0))
             tiempo_anim = pygame.time.get_ticks()
             brillo = int(80 * math.sin(tiempo_anim * 0.005) + 80)
+            
+            ancho_actual, alto_actual = Pantalla.get_size()
 
             for i in range(3):
                 radio = (tiempo_anim // 4 % 500) + (i * 45)
-                pygame.draw.circle(Pantalla, (200, 50, 0), (anchoPantalla//2, altoPantalla//2), radio, 4)
+                pygame.draw.circle(Pantalla, (200, 50, 0), (ancho_actual//2, alto_actual//2), radio, 4)
 
             texto_boom = fuente_boom.render("¡BOOM! PERDISTE", True, (255, 255, 0))
-            Pantalla.blit(texto_boom, texto_boom.get_rect(center=(anchoPantalla//2, altoPantalla//2 - 150)))
+            Pantalla.blit(texto_boom, texto_boom.get_rect(center=(ancho_actual//2, alto_actual//2 - 150)))
 
-            rect_reintentar.center = (anchoPantalla//2, altoPantalla//2 + 50)
+            rect_reintentar.center = (ancho_actual//2, alto_actual//2 + 50)
             color_r = (50 + brillo, 50 + brillo, 255) if rect_reintentar.collidepoint(mouse_pos) else (80, 0, 0)
             pygame.draw.rect(Pantalla, color_r, rect_reintentar, border_radius=25)
             pygame.draw.rect(Pantalla, (255,255,255), rect_reintentar, 2, border_radius=25)
             txt_r = fuente_botones.render("REINTENTAR", True, (255,255,255))
             Pantalla.blit(txt_r, txt_r.get_rect(center=rect_reintentar.center))
 
-            rect_volver_menu.center = (anchoPantalla//2, altoPantalla//2 + 160)
+            rect_volver_menu.center = (ancho_actual//2, alto_actual//2 + 160)
             color_v = (50 + brillo, 50 + brillo, 255) if rect_volver_menu.collidepoint(mouse_pos) else (80, 0, 0)
             pygame.draw.rect(Pantalla, color_v, rect_volver_menu, border_radius=25)
             pygame.draw.rect(Pantalla, (255,255,255), rect_volver_menu, 2, border_radius=25)
@@ -250,22 +254,24 @@ def main():
             Pantalla.fill((0, 80, 0)) # Fondo verde oscuro para resaltar chispitas
             tiempo_anim = pygame.time.get_ticks()
             brillo = int(80 * math.sin(tiempo_anim * 0.005) + 80)
+            
+            ancho_actual, alto_actual = Pantalla.get_size()
 
             #  DIBUJAR EFECTO DE CHISPITAS 
             for c in chispitas:
                 c['y'] += c['vel_y']
                 c['x'] += c['vel_x']
-                if c['y'] < -10: c['y'] = altoPantalla + 10 # Reiniciar abajo
+                if c['y'] < -10: c['y'] = alto_actual + 10 # Reiniciar abajo
                 
                 # Brillo 
                 tamanio = random.randint(2, 5)
                 pygame.draw.circle(Pantalla, c['color'], (int(c['x']), int(c['y'])), tamanio)
 
             texto_ganaste = fuente_boom.render("¡GANASTE!", True, (255, 255, 255))
-            Pantalla.blit(texto_ganaste, texto_ganaste.get_rect(center=(anchoPantalla//2, altoPantalla//2 - 150)))
+            Pantalla.blit(texto_ganaste, texto_ganaste.get_rect(center=(ancho_actual//2, alto_actual//2 - 150)))
 
             # Botón REINTENTAR (Victoria)
-            rect_reintentar.center = (anchoPantalla//2, altoPantalla//2 + 50)
+            rect_reintentar.center = (ancho_actual//2, alto_actual//2 + 50)
             color_r = (50 + brillo, 50 + brillo, 255) if rect_reintentar.collidepoint(mouse_pos) else (0, 120, 0)
             pygame.draw.rect(Pantalla, color_r, rect_reintentar, border_radius=25)
             pygame.draw.rect(Pantalla, (255,255,255), rect_reintentar, 2, border_radius=25)
@@ -273,7 +279,7 @@ def main():
             Pantalla.blit(txt_r, txt_r.get_rect(center=rect_reintentar.center))
 
             # Botón VOLVER AL MENÚ (Victoria)
-            rect_volver_menu.center = (anchoPantalla//2, altoPantalla//2 + 160)
+            rect_volver_menu.center = (ancho_actual//2, alto_actual//2 + 160)
             color_v = (50 + brillo, 50 + brillo, 255) if rect_volver_menu.collidepoint(mouse_pos) else (0, 120, 0)
             pygame.draw.rect(Pantalla, color_v, rect_volver_menu, border_radius=25)
             pygame.draw.rect(Pantalla, (255,255,255), rect_volver_menu, 2, border_radius=25)
