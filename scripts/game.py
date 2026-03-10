@@ -37,13 +37,16 @@ class Game:
 
         # Lista de posiciones estratégicas (Fila, Columna) donde pueden aparecer los enemigos
         self.Posiciones_Estrategicas = [
-            (13, 10), (9, 5), (7, 15), (5, 5), (12, 18), (3, 10), (10, 2)
+            (13, 10), (9, 5), (7, 15), (5, 5), (12, 18), (3, 10), (10, 2), (6, 12), (2, 18)
         ]
 
         self.Enemigos = [ # Lista de enemigos con sus posiciones iniciales
             Enemigo(self.Mapa, 13, 10), # Enemigo 1 bloqueando el pasillo de la salida
             Enemigo(self.Mapa, 9, 5),   # Enemigo 2 vigilando la entrada al lodo
-            Enemigo(self.Mapa, 7, 14),   # Enemigo 3 patrullando el pasillo central derecho
+            Enemigo(self.Mapa, 7, 14), # Enemigo 3 patrullando el pasillo central derecho
+            Enemigo(self.Mapa, 1, 18), # Enemigo 4 cubriendo el pasillo superior derecho
+            Enemigo(self.Mapa, 12, 1), # Enemigo 5 cubriendo el pasillo inferior izquierdo
+            Enemigo(self.Mapa, 3, 10), # Enemigo 6 cubriendo el centro del mapa
         ] 
         
     # Función para reposicionar enemigos de forma aleatoria
@@ -78,8 +81,12 @@ class Game:
                         self.Enemigos = [  # Reinicia los enemigos a sus posisiones estrategicas
                             Enemigo(self.Mapa, 13, 10), # Guardia de la salida
                             Enemigo(self.Mapa, 9, 5),   # Centinela del lodo
-                            Enemigo(self.Mapa, 7, 14)   # Interceptor central
+                            Enemigo(self.Mapa, 7, 14),   # Interceptor central
+                            Enemigo(self.Mapa, 1, 18), # Para cubrir el pasillo superior derecho
+                            Enemigo(self.Mapa, 12, 1), # Para cubrir el pasillo inferior izquierdo
+                            Enemigo(self.Mapa, 3, 10), # Para cubrir el centro del mapa
                         ]
+                    
                         # Al empezar de cero, reposicionamos los enemigos de forma aleatoria 
                         self.Reposicionar_Enemigos_Aleatorio()
 
@@ -107,10 +114,10 @@ class Game:
             CeldaActual = self.Mapa.Cuadricula[f_idx][c_idx] # Para saber que pisa el jugador
             
             # LOGICA DE VELOCIDAD SEGUN EL TERRENO (LODO)
-            if CeldaActual == 4: # Si el jugador esta pisando lodo (4)
-                self.Jugador.Velocidad = 2.0 # Baja la velocidad del jugador 
+            if CeldaActual == 5: # Si el jugador esta pisando lodo (5)
+                self.Jugador.Velocidad = 4.0 # Baja la velocidad del jugador 
             else:
-                self.Jugador.Velocidad = 4.0 # Velocidad normal fuera del lodo
+                self.Jugador.Velocidad = 5.0 # Velocidad normal fuera del lodo
 
             # LOGICA DE DAÑO POR TRAMPAS
             if CeldaActual == 3: # Si el jugador pisa los pinchos rojos (3)

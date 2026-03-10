@@ -13,7 +13,7 @@ class Player:
 
         self.Color = (0, 255, 0)  # Color De mi jugador 
 
-        self.Velocidad = 2.0  # Velocidad en píxeles por segundo, que va a tener el jugador. 
+        self.Velocidad = 5.0  # Velocidad en píxeles por segundo, que va a tener el jugador. 
 
       
          
