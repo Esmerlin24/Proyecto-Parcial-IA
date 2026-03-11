@@ -59,7 +59,7 @@ class Mapa:
         
         # Lógica para alternar la animación 
         TiempoActual = pygame.time.get_ticks()
-        if TiempoActual - self.UltimoCambio > 4000:
+        if TiempoActual - self.UltimoCambio > 2000:
             self.MostrarPinchos = not self.MostrarPinchos
             self.UltimoCambio = TiempoActual
 

@@ -120,7 +120,7 @@ class Game:
                 self.Jugador.Velocidad = 5.0 # Velocidad normal fuera del lodo
 
             # LOGICA DE DAÑO POR TRAMPAS
-            if CeldaActual == 3: # Si el jugador pisa los pinchos rojos (3)
+            if CeldaActual == 3 and self.Mapa.MostrarPinchos: # Si el jugador pisa los pinchos rojos (3)
                 self.Vidas -= 1 # Resta una vida por el daño
                 try: self.sonido_choque.play() # Sonido al pisar trampa
                 except: pass
